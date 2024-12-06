@@ -1,6 +1,6 @@
 import React from 'react'
-import PlayerSelectButton from '@/components/PlayerSelectButton/PlayerSelectButton'
-import DecorativeShapesBackground from '@/components/DecorativeShapesBackground/DecorativeShapesBackground';
+import PlayerSelectButton from '@/components/PlayerSelectButton'
+import DecorativeShapesBackground from '@/components/DecorativeShapesBackground';
 
 // Main Voting Page Component
 export default function VotingPage() {

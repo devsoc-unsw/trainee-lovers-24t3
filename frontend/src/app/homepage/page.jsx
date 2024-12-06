@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import PrimaryButton from '../../components/PrimaryButton';
 import SecondaryButton from '../../components/SecondaryButton';
-import Modal from '../../components/Modal/Modal';
+import Modal from '../../components/Modal';
 import useAuthStore from '../../store/useAuthStore';
 
 export default function Page() {

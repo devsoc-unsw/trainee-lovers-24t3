@@ -1,4 +1,4 @@
-import NameTag from '../../components/NameTag/NameTag';
+import NameTag from '../../components/NameTag';
 
 const Page = () => {
   return (
