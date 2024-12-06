@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import PrimaryButton from '../../components/PrimaryButton';
 import SecondaryButton from '../../components/SecondaryButton';
-import Modal from '../../components/Modal';
+import StartGameModal from '../../components/StartGameModal';
 import useAuthStore from '../../store/useAuthStore';
 import DecorativeShapesBackground from '@/components/DecorativeShapesBackground';
 import EnterNameModal from '@/components/EnterNameModal';
@@ -16,7 +16,7 @@ export default function Page() {
     <DecorativeShapesBackground />
     <div className='absolute inset-0 flex items-center justify-center'>
       { (isHost && hasPickedRole) ? (
-        <Modal />
+        <StartGameModal />
       ) : hasPickedRole ? (
         <EnterNameModal />
       ) : (

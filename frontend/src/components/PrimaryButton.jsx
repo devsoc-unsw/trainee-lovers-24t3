@@ -7,12 +7,13 @@ import useAuthStore from '../store/useAuthStore';
 
 export default function PrimaryButton({ name, action }) {
   const router = useRouter();
-  const { setIsHost } = useAuthStore();
+  const { setIsHost, setHasPickedRole } = useAuthStore();
 
   const handleRedirect = () => {
     // If is a host then function
     if (action === 'createRoom') {
       setIsHost(true);
+      setHasPickedRole(true);
     }
   }
 

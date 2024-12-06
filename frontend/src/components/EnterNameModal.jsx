@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 
 const EnterNameModal = () => {
   const router = useRouter();
-  const { userName, setUserName } = useAuthStore();
+  const { userName, setUserName, setHasPickedRole, setIsHost } = useAuthStore();
   
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
@@ -13,6 +13,11 @@ const EnterNameModal = () => {
 
   const handleSubmit = () => {
     router.push('/lobby');
+  }
+
+  const handleBack = () => {
+    setHasPickedRole(false);
+    setIsHost(false);
   }
 
   return (
@@ -32,6 +37,12 @@ const EnterNameModal = () => {
         onClick={() => handleSubmit()}
       >
         Enter
+      </button>
+      <button
+        className='bg-[#4154AF] text-xl text-center w-3/4 p-2 rounded-lg text-white hover:bg-white hover:text-[#4144AF] border border-[#4154AF]'
+        onClick={() => handleBack()}
+      >
+        Back
       </button>
     </div>
   )
