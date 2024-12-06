@@ -7,7 +7,7 @@ import useAuthStore from '../store/useAuthStore';
 
 export default function PrimaryButton({ name, action }) {
   const router = useRouter();
-  const { setIsHost, setHasPickedRole, handleSubmitName } = useAuthStore();
+  const { setIsHost, setHasPickedRole } = useAuthStore();
 
   const handleRedirect = () => {
     // If is a host then function
@@ -25,7 +25,7 @@ export default function PrimaryButton({ name, action }) {
 
   return (
     <div
-      className='flex items-center justify-center w-8/12 h-16 py-2 text-3xl md:text-5xl text-white bg-mid-blue font-mouse rounded-md z-10 cursor-pointer hover:border'
+      className='flex items-center justify-center w-8/12 h-16 py-2 text-3xl lg:text-5xl text-white bg-mid-blue font-mouse rounded-md z-10 cursor-pointer hover:border'
       onClick={() => handleRedirect()}
     >
       {name}
