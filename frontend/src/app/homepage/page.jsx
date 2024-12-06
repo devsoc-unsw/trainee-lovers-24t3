@@ -1,12 +1,15 @@
-import React from "react";
+"use client";
+
+import React, { useRef, useEffect } from "react";
+import PrimaryButton from "../components/PrimaryButton/PrimaryButton";
 import QuestionBox from "../components/QuestionBox/QuestionBox";
 
 export default function Page() {
   return (
-    <div className="h-screen w-screen pt-5 flex justify-center">
-      <QuestionBox question={"What was the question?"}></QuestionBox>
-			<QuestionBox question={"What was the question 2?"}></QuestionBox>
-			<QuestionBox question={"What was the question 3?"}></QuestionBox>
-    </div>
+    <>
+      <div>page</div>
+      <PrimaryButton link="youtube.com" name="HOST" />
+      <QuestionBox question={"hello?"}></QuestionBox>
+    </>
   );
 }
