@@ -12,7 +12,9 @@ const Page = () => {
           <NameTag name='Angelin' />
           <NameTag name='Agus' />
         </div>
-        <PrimaryButton name='START GAME' action='startGame'/>
+        <div className='flex w-full sm:w-3/4 md:w-1/3 justify-center items-center'>
+          <PrimaryButton name='START GAME' action='startGame'/>
+        </div>
       </div>
     </div>
   )
