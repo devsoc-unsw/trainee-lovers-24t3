@@ -16,6 +16,8 @@ export default function PrimaryButton({ name, action }) {
       setHasPickedRole(true);
     } else if (action === 'submitUserName') {
       router.push('/lobby');
+    } else if (action === 'startGame') {
+      router.push('/question');
     }
   }
 
