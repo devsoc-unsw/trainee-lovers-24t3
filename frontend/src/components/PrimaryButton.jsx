@@ -18,6 +18,8 @@ export default function PrimaryButton({ name, action }) {
       router.push('/lobby');
     } else if (action === 'startGame') {
       router.push('/question');
+    } else if (action === 'answerQuestions') {
+      router.push('/voting')
     }
   }
 

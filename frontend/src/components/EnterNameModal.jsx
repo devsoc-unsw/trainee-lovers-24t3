@@ -5,7 +5,7 @@ import SecondaryButton from '@/components/SecondaryButton';
 
 const EnterNameModal = () => {
   const router = useRouter();
-  const { userName, setUserName, setHasPickedRole, setIsHost } = useAuthStore();
+  const { userName, setUserName } = useAuthStore();
   
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
