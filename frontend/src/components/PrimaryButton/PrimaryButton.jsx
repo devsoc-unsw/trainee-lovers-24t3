@@ -5,6 +5,6 @@ export default function PrimaryButton({name, link}) {
     window.location.href = link;
   };
   return (
-    <div onClick={handleRedirect} className='w-48 text-white bg-mid-blue font-mouse'>{name}</div>
+    <div onClick={handleRedirect} className='w-[150px] py-2 text-3xl text-white bg-mid-blue font-mouse rounded-md text-center'>{name}</div>
   );
 };
