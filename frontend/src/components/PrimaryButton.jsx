@@ -18,7 +18,7 @@ export default function PrimaryButton({ name, action }) {
 
   return (
     <div
-      className='flex items-center justify-center w-8/12 md:w-1/5 h-16 py-2 text-5xl text-white bg-mid-blue font-mouse rounded-md z-10 cursor-pointer hover:border'
+      className='flex items-center justify-center w-8/12 h-16 py-2 text-3xl md:text-5xl text-white bg-mid-blue font-mouse rounded-md z-10 cursor-pointer hover:border'
       onClick={() => handleRedirect()}
     >
       {name}

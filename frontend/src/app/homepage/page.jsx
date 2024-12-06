@@ -14,7 +14,7 @@ export default function Page() {
     { isHost ? (
       <Modal />
     ) : (
-      <>
+      <div className='flex flex-col w-full md:w-1/3 gap-2 items-center justify-center'>
         <PrimaryButton 
           name="HOST"
           action='createRoom'
@@ -23,7 +23,7 @@ export default function Page() {
           name="JOIN"
           action='joinRoom'
         />
-      </>
+      </div>
     )}
         
     </div>
