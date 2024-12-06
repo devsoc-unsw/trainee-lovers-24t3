@@ -1,4 +1,5 @@
-import NameTag from '../components/NameTag/NameTag'
+import NameTag from '../../components/NameTag/NameTag';
+
 const Page = () => {
   return (
     <div className='flex flex-row w-full h-screen bg-[white] items-center justify-center gap-3'>
