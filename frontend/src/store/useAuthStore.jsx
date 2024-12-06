@@ -1,10 +1,13 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 const useAuthStore = create(
 	(set, get) => ({
 		isHost: false,
-		setIsHost: ( host ) => set({ isHost: host })
+    hasPickedRole: false,
+    userName: '',
+		setIsHost: ( host ) => set({ isHost: host }),
+    setHasPickedRole: ( hasPicked ) => set({ hasPickedRole : hasPicked}),
+    setUserName: ( name ) => set({ userName: name }),
 	})
 )
 

@@ -1,13 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import useAuthStore from '../store/useAuthStore';
 
 export default function SecondaryButton({ name, action }) {
   const router = useRouter();
+  const { setHasPickedRole } = useAuthStore();
 
   const handleRedirect = () => {
     if (action === 'joinRoom') {
-      router.push('/lobby');
+      setHasPickedRole(true);
     }
   };
 
