@@ -3,7 +3,7 @@ import DecorativeShapesBackground from '@/components/DecorativeShapesBackground'
 
 const Page = () => {
   return (
-    <div className='flex flex-row w-full h-screen bg-white items-center justify-center'>
+    <div className='flex flex-col w-full h-screen bg-white items-center justify-center'>
       <DecorativeShapesBackground />
       <div className='absolute inset-0 flex justify-center items-center gap-3'>
         <NameTag name='Jerry' />
