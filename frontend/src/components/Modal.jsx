@@ -1,5 +1,5 @@
-import PrimaryButton from '../PrimaryButton';
-import SecondaryButton from '../SecondaryButton';
+import PrimaryButton from './PrimaryButton';
+import SecondaryButton from './SecondaryButton';
 
 const Modal = () => {
   return (
