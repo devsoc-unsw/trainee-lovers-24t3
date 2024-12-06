@@ -1,15 +1,31 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
-import PrimaryButton from "../../components/PrimaryButton/PrimaryButton";
-import SecondaryButton from "../../components/SecondaryButton/SecondaryButton";
+import React, { useRef, useEffect, useState } from 'react'
+import PrimaryButton from '../../components/PrimaryButton';
+import SecondaryButton from '../../components/SecondaryButton';
+import Modal from '../../components/Modal/Modal';
+import useAuthStore from '../../store/useAuthStore';
 
 export default function Page() {
+  const { isHost } = useAuthStore();
+
   return (
-    <>
-      <div>page</div>
-      <PrimaryButton link="youtube.com" name="HOST" />
-      <SecondaryButton link="youtube.com" name="JOIN" />
-    </>
-  );
+    <div className='flex relative flex-col w-full h-screen bg-white items-center justify-center gap-5'>
+    { isHost ? (
+      <Modal />
+    ) : (
+      <>
+        <PrimaryButton 
+          name="HOST"
+          action='createRoom'
+        />
+        <SecondaryButton 
+          name="JOIN"
+          action='joinRoom'
+        />
+      </>
+    )}
+        
+    </div>
+  )
 }
