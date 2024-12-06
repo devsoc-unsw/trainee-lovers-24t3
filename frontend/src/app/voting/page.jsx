@@ -4,16 +4,16 @@ import DecorativeShapesBackground from '@/components/DecorativeShapesBackground'
 
 // Main Voting Page Component
 export default function VotingPage() {
-    const name1 = "Kelly";
-    const name2 = "Agus";
-    const questionStr = "Who has the highest WAM?";
+  const name1 = "Kelly";
+  const name2 = "Agus";
+  const questionStr = "Who has the highest WAM?";
 
   return (
     <div className='relative h-screen bg-gray-100'>
         
 		{/* Decortaing shaeps */}
 		<DecorativeShapesBackground/>
-        <div className="absolute inset-0 flex flex-col justify-center items-center p-4">
+      <div className="absolute inset-0 flex flex-col justify-center items-center p-4">
 
 			{/* Title */}
 			<h1 className="text-3xl md:text-5xl font-bold text-gray-800 mb-6">
