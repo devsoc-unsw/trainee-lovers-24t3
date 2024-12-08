@@ -2,6 +2,9 @@ const { initializeSocketServer } = require('./socketServer');
 const http = require('http');
 
 const server = http.createServer();
+const connectDB = require('./db');
+
+connectDB();
 initializeSocketServer(server);
 
 server.listen(3000, () => {
@@ -10,6 +13,7 @@ server.listen(3000, () => {
 
 const fs = require('fs');
 const path = require('path');
+const Question = require('./schema/Question');
 
 function generateRandomWord(categoryName, callback) {
   fs.readdir('categoryWords', (err, files) => {
@@ -40,5 +44,22 @@ function generateRandomWord(categoryName, callback) {
     });
   });
 }
+
+const addQuestion = async () => {
+  const newQuestion = new Question({
+    questionContent: "What is your WAM?",
+    questionResponses: [],
+    winner: null,
+  });
+
+  try {
+      await newQuestion.save();
+      console.log("Question saved:", newQuestion);
+  } catch (err) {
+      console.error(err.message);
+  }
+};
+
+addQuestion();
 
 module.exports = generateRandomWord;
