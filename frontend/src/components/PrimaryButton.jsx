@@ -1,23 +1,34 @@
 'use client'
 
-import React from 'react'
-
 import { useRouter } from 'next/navigation';
 import useAuthStore from '../store/useAuthStore';
 
 export default function PrimaryButton({ name, action }) {
   const router = useRouter();
-  const { setIsHost, setHasPickedRole } = useAuthStore();
+  const { isHost ,setIsHost , setShowEnterNameModal, setShowSelectQuestionsModal, 
+    setShowGameIdModal, setShowStartGameModal } = useAuthStore();
 
   const handleRedirect = () => {
     // If is a host then function
     if (action === 'createRoom') {
       setIsHost(true);
-      setHasPickedRole(true);
-    } else if (action === 'submitUserName') {
-      router.push('/lobby');
+      setShowEnterNameModal(true);
+    } else if (action === 'submitUsername') {
+      if (isHost) {
+        setShowSelectQuestionsModal(true);
+      } else {
+        setShowGameIdModal(true);
+      }
+      setShowEnterNameModal(false);
     } else if (action === 'startGame') {
-      router.push('/question');
+      setShowStartGameModal(false);
+      router.push('/lobby');
+    } else if (action === 'enterGameId') {
+      setShowGameIdModal(false);
+      router.push('/lobby');
+    } else if (action === 'selectQuestions') {
+      setShowSelectQuestionsModal(false);
+      setShowStartGameModal(true);
     } else if (action === 'answerQuestions') {
       router.push('/voting')
     }

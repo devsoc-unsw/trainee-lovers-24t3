@@ -117,7 +117,7 @@ const SelectQuestionsModal = () => {
       >
         {questionsType === "custom" ? (
           <div
-            className="flex items-center justify-center text-2xl lg:text-5xl text-white opacity-60 bg-mid-blue font-mouse rounded-md z-10 cursor-pointer text-nowrap"
+            className="flex items-center justify-center text-2xl lg:text-5xl text-white bg-blue-900 font-mouse rounded-md z-10 cursor-pointer text-nowrap"
             onClick={() => {
               const copy = [...isEdit];
               copy[questions.length] = true;
@@ -184,7 +184,7 @@ const SelectQuestionsModal = () => {
   };
 
   return (
-    <div className="flex flex-col w-[75%] h-full border border-[#8093F1] p-4 items-center justify-center gap-3 rounded-lg py-5 gap-4">
+    <div className="flex flex-col w-3/4 border border-[#8093F1] p-4 items-center justify-center gap-3 rounded-lg py-5 gap-4 overflow-y-auto">
       <div className="flex flex-col gap-2">
         <p className="text-3xl text-[#4154AF] text-center">
           Select the number of question(s)
@@ -243,7 +243,7 @@ const SelectQuestionsModal = () => {
         {displayQuestions()}
       </div>
       <PrimaryButton name="Save" action="startGame" />
-      <SecondaryButton name="Back" action="backToHomePage" />
+      <SecondaryButton name="Back" action="backToEnterName" />
     </div>
   );
 };
