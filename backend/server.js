@@ -160,6 +160,67 @@ const votePlayer = async (gameId, questionId, playerId, response) => {
   }
 }
 
+// pass in previous player ids so we don't choose the same players
+const chooseRandomPlayer = async (prevPlayerId, gameId, questionId) => {
+  const game = await findGame(gameId);
+  const players = game.users;
+  const randomIndex = Math.floor(Math.random() * players.length);
+  const randomPlayer = players[randomIndex];
+  if (randomPlayer === prevPlayerId) {
+    return chooseRandomPlayer(prevPlayerId, gameId, questionId);
+  }
+}
+
+
+// obtains the winner with the more votes in the current voting ession
+const getCurrentWinner = async (gameId, questionId, votingSessionId) => {
+  // find the voting session
+  const votingSession = await VotingSession.findOne({ sessionId: gameId, qid: questionId });
+  if (!votingSession) {
+    console.error(`VotingSession not found for gameId ${gameId} and questionId ${questionId}`);
+    return null;
+  }
+
+  // find the voting responses
+  const votingResponses = await VotingResponse.find({ _id: { $in: votingSession.votingResponse } });
+  if (!votingResponses) {
+    console.error(`VotingResponses not found for votingSessionId ${votingSessionId}`);
+    return null;
+  }
+
+  // count the votes
+  const voteCount = votingResponses.reduce((acc, response) => {
+    if (response.response) {
+      acc[response.uid] = acc[response.uid] ? acc[response.uid] + 1 : 1;
+    }
+    return acc;
+  }, {});
+
+  // find the player with the most votes
+  const winnerId = Object.keys(voteCount).reduce((a, b) => voteCount[a] > voteCount[b] ? a : b);
+  return winnerId;
+}
+
+const getNextQuestion = (gameId) => {
+  // increment game schema "atQuestion" field
+  // return the question at that index
+  game = findGame(gameId);
+  game.atQuestion += 1;
+  
+  if (game.atQuestion == game.questions.length) {
+    // TODO: end game
+    return null;
+  }
+
+  const nextQuestion = game.questions[game.atQuestion];
+  return nextQuestion;
+}
+
+// endGame function
+// - set game to inactive
+
+
+
 
 // createGame("1234", "KJ", (err, game) => {
 //   if (err) {

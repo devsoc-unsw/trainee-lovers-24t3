@@ -5,6 +5,7 @@ const GameSessionSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true },
     questions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Question' }], 
     votingSessions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'VotingSession' }],
+    atQuestion: {type: Int, default: 0}
 });
 
 module.exports = mongoose.model('GameSession', GameSessionSchema);
