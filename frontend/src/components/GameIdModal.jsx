@@ -2,7 +2,7 @@ import { useRouter } from 'next/navigation';
 import useAuthStore from '@/store/useAuthStore';
 import PrimaryButton from '@/components/PrimaryButton';
 
-const gameIdModal = () => {
+const GameIdModal = () => {
   const { gameId, setGameId } = useAuthStore();
   const router = useRouter();
 
@@ -30,4 +30,4 @@ const gameIdModal = () => {
   )
 }
 
-export default gameIdModal;
+export default GameIdModal;
