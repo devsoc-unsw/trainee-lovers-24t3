@@ -9,7 +9,7 @@ export default function VotingPage() {
   const questionStr = "Who has the highest WAM?";
 
   return (
-    <div className='relative h-screen bg-gray-100'>
+    <div className='relative h-screen bg-white'>
         
 		{/* Decortaing shaeps */}
 		<DecorativeShapesBackground/>
