@@ -242,7 +242,7 @@ const SelectQuestionsModal = () => {
         </p>
         {displayQuestions()}
       </div>
-      <PrimaryButton name="Save" action="startGame" />
+      <PrimaryButton name="Save" action="selectQuestions" />
       <SecondaryButton name="Back" action="backToEnterName" />
     </div>
   );
