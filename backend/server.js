@@ -17,6 +17,8 @@ const path = require('path');
 const Question = require('./schema/Question');
 const GameSession = require('./schema/GameSession');
 const GameUser = require('./schema/GameUser');
+const VotingResponse = require('./schema/VotingResponse');
+const VotingSession = require('./schema/VotingSession');
 
 function generateRandomWord(categoryName, callback) {
   fs.readdir('categoryWords', (err, files) => {
@@ -97,20 +99,67 @@ const findGame = async (gameId) => {
 }
 
 // need to correspond each response to this quesiton
-const addQuestion = async (questionContent) => {
-  const newQuestion = new Question({
-    questionContent: questionContent,
-    questionResponses: [],
-    winner: null,
-  });
-
+const addQuestion = async (questionContent, gameId) => {
   try {
-      await newQuestion.save();
-      console.log("Question saved:", newQuestion);
+    const newQuestion = new Question({
+      questionContent: questionContent,
+      questionResponses: [],
+      winner: null,
+    });
+
+    // create the voting session for this question
+    const newVotingSession = new VotingSession({
+      sessionId: gameId,
+      qid: newQuestion._id,
+      votingResponse: [],
+    });
+
+
+    // push to the game session
+    const game = await findGame(gameId);
+    if (game) {
+      game.questions.push(newQuestion._id);
+      game.votingSessions.push(newVotingSession._id);
+      await game
+        .save()
+        .then(() => console.log("Game updated with new question"))
+        .catch((err) => console.error(err));
+    }
+
+
+    await Promise.all([newQuestion.save(), newVotingSession.save(), game.save()]);
+    console.log("Question saved:", newQuestion);
   } catch (err) {
       console.error(err.message);
   }
 };
+
+const votePlayer = async (gameId, questionId, playerId, response) => {
+  try {
+    const votingResponse = await VotingResponse.create({
+      uid: playerId,
+      response: response
+    });
+
+    console.log('VotingResponse Created:', votingResponse);
+
+    // find the votingSession
+    const updateVotes = await VotingSession.findOneAndUpdate(
+      { sessionId: gameId, qid: questionId },
+      { $push: { votingResponse: votingResponse._id } }
+    );
+
+    if (updateVotes) {
+      console.log('VotingSession Updated:', updateVotes);
+    } else {
+      console.log(`VotingSession not found for given gameId ${gameId} and questionId ${questionId}`);
+    }
+
+  } catch (err) {
+    console.error(err.message);
+  }
+}
+
 
 // createGame("1234", "KJ", (err, game) => {
 //   if (err) {
@@ -119,8 +168,7 @@ const addQuestion = async (questionContent) => {
 //   }
 // });
 
-findGame("1234");
-
-// addQuestion("How many hoes you got?");
+// addQuestion("How many hoes you got?", "1234");
+// votePlayer("1234", "67597ed7e687558ab23b1098", "675505ea22d896b1e6954880", true);
 
 module.exports = generateRandomWord;
