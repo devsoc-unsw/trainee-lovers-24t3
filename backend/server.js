@@ -98,7 +98,7 @@ const findGame = async (gameId) => {
   }
 }
 
-const joinGame = async (gameId, username, callback) => {
+const joinGame = async (gameId, username) => {
   try {
     const game = await findGame(gameId);
     if (!game) {
@@ -106,7 +106,7 @@ const joinGame = async (gameId, username, callback) => {
     } 
 
     const newUser = new GameUser({
-      gameId: gameId,
+      gameId: game._id,
       username: username
     })
 
@@ -115,7 +115,7 @@ const joinGame = async (gameId, username, callback) => {
     // Include player to the game
     game.users.push(newUser._id);
     await game.save();
-    
+
     return game;
   } catch (err) {
     console.error(err.message);
