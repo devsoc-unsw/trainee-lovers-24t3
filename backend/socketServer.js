@@ -1,23 +1,37 @@
 let ioInstance;
 let rooms = {};
 
+import { Server } from 'socket.io';
 
 function initializeSocketServer(server) {
 
-  if (ioInstance) return ioInstance;
-
-  const { Server } = require('socket.io');
   ioInstance = new Server(server, {
     cors: {
-      origin: ['http://localhost:3000', 'https://trainee-warden-24t2-keyword.vercel.app', 'http://localhost:3001', 'https://warden-games.vercel.app'],
-      methods: ["GET", "POST"]
+      origin: [
+        'http://localhost:3000',
+        'https://trainee-warden-24t2-keyword.vercel.app', 
+        'http://localhost:3001',
+        'https://warden-games.vercel.app'
+      ],
+      methods: ["GET", "POST"],
+      credentials: true
     },
   });
+
+  const userMap = (roomCode) => {
+    return rooms[roomCode].users.map(user => ({
+      uid: user.uid,
+      username: user.username,
+      isHost: user.uid === rooms[roomCode].host,
+      readyStatus: user.readyStatus,
+      roundLoaded: user.roundLoaded
+    }));
+  };
 
   ioInstance.on('connection', (socket) => {
     console.log('New connection:', socket.id);
 
-    socket.on('create-room', (username, uid, roomCode) => {
+    socket.on('create-room', (username, uid, roomCode, callback) => {
       rooms[roomCode] = {
         host: uid,
         users: [{ socket: socket.id, username, uid, readyStatus: false, roundLoaded: false }],
@@ -30,6 +44,7 @@ function initializeSocketServer(server) {
       socket.join(roomCode);
       ioInstance.to(roomCode).emit('update-room', userMap(roomCode));
       console.log(`${username} created room: ${roomCode}`);
+      callback({ success: true });
       console.log(rooms);
     });
 
@@ -41,14 +56,14 @@ function initializeSocketServer(server) {
         }
     
         // Check if the user already exists in the room
-        const existingUser = rooms[roomCode].users.find(room => room.uid === uid);
+        const existingUser = rooms[roomCode].users.find((user) => user.uid === uid);
         if (!existingUser) {
           rooms[roomCode].users.push({
             socket: socket.id,
             username: username,
             uid: uid,
             readyStatus: false,
-            roundLoaded: false
+            roundLoaded: false,
           });
         } else {
           console.log("update socket id for user ", username, " to ", socket.id);
@@ -62,10 +77,18 @@ function initializeSocketServer(server) {
         console.log('users in room ', usersInRoom)
     
         // update callback function with the list of users
-        callback(usersInRoom);
+        callback({ users: usersInRoom });
     
         // alert users that u joined room
         ioInstance.to(roomCode).emit('update-room', usersInRoom);
+    });
+
+    socket.on('start-game', (roomCode) => {
+      if (!rooms[roomCode]) return;
+    
+      rooms[roomCode].gameStart = true;
+      ioInstance.to(roomCode).emit('game-started');
+      console.log(`Game started in room ${roomCode}`);
     });
 
     socket.on('update-ready', (roomCode, userId) => {
@@ -104,28 +127,30 @@ function initializeSocketServer(server) {
     socket.on('leave-room', (roomCode, userId) => {
       console.log('leave room is called')  
       if (!rooms[roomCode] || !rooms[roomCode].users) {
-            return;
-        }
-        const userIndex = rooms[roomCode].users.findIndex(user => user.uid === userId);
-        socket.leave(roomCode);
-        console.log(`${userId} left room: ${roomCode}`);
-        
-        if (userIndex !== -1) {
-            rooms[roomCode].users.splice(userIndex, 1);
-  
-            ioInstance.to(roomCode).emit('update-room', rooms[roomCode].users.map(user => ({
-              username: user.username,
-              isHost: user.uid === rooms[roomCode].host,
-              readyStatus: user.readyStatus
-            })));
+        return;
+      }
 
-            // If the room is empty, delete it
-            if (rooms[roomCode].users.length === 0) {
-                clearInterval(rooms[roomCode].intervalId);
-                delete rooms[roomCode];
-                console.log(`Room ${roomCode} deleted as it is now empty.`);
-            }
+      const userIndex = rooms[roomCode].users.findIndex(user => user.uid === userId);
+      socket.leave(roomCode);
+      console.log(`${userId} left room: ${roomCode}`);
+        
+      if (userIndex !== -1) {
+        rooms[roomCode].users.splice(userIndex, 1);
+
+        ioInstance.to(roomCode).emit('update-room', rooms[roomCode].users.map(user => ({
+          username: user.username,
+          isHost: user.uid === rooms[roomCode].host,
+          readyStatus: user.readyStatus,
+          roundLoaded: user.roundLoaded
+        })));
+
+        // If the room is empty, delete it
+        if (rooms[roomCode].users.length === 0) {
+          clearInterval(rooms[roomCode].intervalId);
+          delete rooms[roomCode];
+          console.log(`Room ${roomCode} deleted as it is now empty.`);
         }
+      }
     });
 
     socket.on('update-time', (roomCode, time) => {
@@ -216,7 +241,7 @@ function initializeSocketServer(server) {
     });
 
     socket.on('get-word', (roomCode, categoryName) => {
-      const generateRandomWord = require('./server');
+      const generateRandomWord = require('./server').default;
       const room = rooms[roomCode];
       if (!room) {
         console.log('Room not found');
@@ -314,13 +339,4 @@ function updateReady(roomCode, userId) {
   ioInstance.to(roomCode).emit('update-room', userMap(roomCode));
 }
 
-const userMap = (roomCode) => {
-   return rooms[roomCode].users.map(user => ({
-    username: user.username,
-    isHost: user.uid === rooms[roomCode].host,
-    readyStatus: user.readyStatus,
-    roundLoaded: user.roundLoaded
-  }));
-}
-
-module.exports = { initializeSocketServer };
+export { initializeSocketServer };

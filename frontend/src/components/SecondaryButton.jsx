@@ -4,8 +4,13 @@ import useAuthStore from "../store/useAuthStore";
 import { useRouter } from "next/navigation";
 
 export default function SecondaryButton({ name, action }) {
-  const { setIsHost, setShowEnterNameModal, setShowSelectQuestionsModal } =
-    useAuthStore();
+  const { 
+    setIsHost,
+    setShowEnterNameModal,
+    setShowSelectQuestionsModal,
+    gameId,
+    setGameId
+  } = useAuthStore();
   const router = useRouter();
 
   const handleRedirect = () => {
@@ -16,6 +21,7 @@ export default function SecondaryButton({ name, action }) {
     } else if (action === "backToHomePage") {
       setIsHost(false);
       setShowEnterNameModal(false);
+      setGameId('');
     } else if (action === "backToEnterName") {
       setShowSelectQuestionsModal(false);
       setShowEnterNameModal(true);
