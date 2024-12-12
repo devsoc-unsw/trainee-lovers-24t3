@@ -98,6 +98,31 @@ const findGame = async (gameId) => {
   }
 }
 
+const joinGame = async (gameId, username, callback) => {
+  try {
+    const game = await findGame(gameId);
+    if (!game) {
+      throw new Error(`Game not found with gameId: ${gameId}`);
+    } 
+
+    const newUser = new GameUser({
+      gameId: gameId,
+      username: username
+    })
+
+    await newUser.save();
+
+    // Include player to the game
+    game.users.push(newUser._id);
+    await game.save();
+    
+    return game;
+  } catch (err) {
+    console.error(err.message);
+    return null;
+  }
+}
+
 // need to correspond each response to this quesiton
 const addQuestion = async (questionContent, gameId) => {
   try {
