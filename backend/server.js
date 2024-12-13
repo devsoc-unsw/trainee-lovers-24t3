@@ -50,22 +50,43 @@ function generateRandomWord(categoryName, callback) {
   });
 }
 
-const createGame = async (gameId, username, callback) => {
+const generateUniqueRoomCode = async () => {
+  let roomCode;
+  let isUnique = false;
+
+  while (!isUnique) {
+    roomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+
+    const existingGame = await GameSession.findOne({ roomCode });
+    if (!existingGame) {
+      isUnique = true;
+    }
+  }
+
+  return roomCode;
+};
+
+const createGame = async (username, callback) => {
   // first create user
+  const roomCode = await generateUniqueRoomCode();
+
   const newUser = new GameUser({
-    gameId: gameId,
+    roomCode: roomCode,
     username: username,
     isHost: true,
   });
 
   await newUser.save();
 
+  // generate a 4 letter number roomCode that is not exisitng
+
   const newGame = new GameSession({
-    gameId: gameId,
+    roomCode: roomCode,
     users: [newUser._id],
     isActive: true,
     questions: [],
     votingSessions: [],
+    atQuestion: 0,
   });
 
   await newGame.save();
@@ -73,7 +94,10 @@ const createGame = async (gameId, username, callback) => {
   try {
     await newGame.save();
     console.log("Game started:", newGame);
-    callback(null, newGame);
+    callback(null, {
+      message: "Game created successfully",
+      roomCode: roomCode
+    });
   } catch (err) {
     console.error(err.message);
     callback(err, null);
@@ -81,11 +105,11 @@ const createGame = async (gameId, username, callback) => {
 };
 
 // find game
-const findGame = async (gameId) => {
+const findGame = async (roomCode) => {
   try {
-    const game = await GameSession.findOne({ gameId: gameId });
+    const game = await GameSession.findOne({ roomCode: roomCode });
     if (!game) {
-      console.error(`Game not found with gameId: ${gameId}`);
+      console.error(`Game not found with roomCode: ${roomCode}`);
       return null;
     } else {
       console.log("Game found:", game);
@@ -98,15 +122,15 @@ const findGame = async (gameId) => {
   }
 }
 
-const joinGame = async (gameId, username) => {
+const joinGame = async (roomCode, username) => {
   try {
-    const game = await findGame(gameId);
+    const game = await findGame(roomCode);
     if (!game) {
-      throw new Error(`Game not found with gameId: ${gameId}`);
+      throw new Error(`Game not found with roomCode: ${roomCode}`);
     } 
 
     const newUser = new GameUser({
-      gameId: game._id,
+      roomCode: roomCode,
       username: username
     })
 
@@ -124,7 +148,7 @@ const joinGame = async (gameId, username) => {
 }
 
 // need to correspond each response to this quesiton
-const addQuestion = async (questionContent, gameId) => {
+const addQuestion = async (questionContent, roomCode) => {
   try {
     const newQuestion = new Question({
       questionContent: questionContent,
@@ -134,14 +158,14 @@ const addQuestion = async (questionContent, gameId) => {
 
     // create the voting session for this question
     const newVotingSession = new VotingSession({
-      sessionId: gameId,
+      roomCode: roomCode,
       qid: newQuestion._id,
       votingResponse: [],
     });
 
 
     // push to the game session
-    const game = await findGame(gameId);
+    const game = await findGame(roomCode);
     if (game) {
       game.questions.push(newQuestion._id);
       game.votingSessions.push(newVotingSession._id);
@@ -159,7 +183,7 @@ const addQuestion = async (questionContent, gameId) => {
   }
 };
 
-const votePlayer = async (gameId, questionId, playerId, response) => {
+const votePlayer = async (roomCode, questionId, playerId, response) => {
   try {
     const votingResponse = await VotingResponse.create({
       uid: playerId,
@@ -170,14 +194,14 @@ const votePlayer = async (gameId, questionId, playerId, response) => {
 
     // find the votingSession
     const updateVotes = await VotingSession.findOneAndUpdate(
-      { sessionId: gameId, qid: questionId },
+      { roomCode: roomCode, qid: questionId },
       { $push: { votingResponse: votingResponse._id } }
     );
 
     if (updateVotes) {
       console.log('VotingSession Updated:', updateVotes);
     } else {
-      console.log(`VotingSession not found for given gameId ${gameId} and questionId ${questionId}`);
+      console.log(`VotingSession not found for given roomCode ${roomCode} and questionId ${questionId}`);
     }
 
   } catch (err) {
@@ -186,23 +210,23 @@ const votePlayer = async (gameId, questionId, playerId, response) => {
 }
 
 // pass in previous player ids so we don't choose the same players
-const chooseRandomPlayer = async (prevPlayerId, gameId, questionId) => {
-  const game = await findGame(gameId);
+const chooseRandomPlayer = async (prevPlayerId, roomCode, questionId) => {
+  const game = await findGame(roomCode);
   const players = game.users;
   const randomIndex = Math.floor(Math.random() * players.length);
   const randomPlayer = players[randomIndex];
   if (randomPlayer === prevPlayerId) {
-    return chooseRandomPlayer(prevPlayerId, gameId, questionId);
+    return chooseRandomPlayer(prevPlayerId, roomCode, questionId);
   }
 }
 
 
 // obtains the winner with the more votes in the current voting ession
-const getCurrentWinner = async (gameId, questionId, votingSessionId) => {
+const getCurrentWinner = async (roomCode, questionId, votingSessionId) => {
   // find the voting session
-  const votingSession = await VotingSession.findOne({ sessionId: gameId, qid: questionId });
+  const votingSession = await VotingSession.findOne({ roomCode: roomCode, qid: questionId });
   if (!votingSession) {
-    console.error(`VotingSession not found for gameId ${gameId} and questionId ${questionId}`);
+    console.error(`VotingSession not found for roomCode ${roomCode} and questionId ${questionId}`);
     return null;
   }
 
@@ -226,10 +250,10 @@ const getCurrentWinner = async (gameId, questionId, votingSessionId) => {
   return winnerId;
 }
 
-const getNextQuestion = (gameId) => {
+const getNextQuestion = (roomCode) => {
   // increment game schema "atQuestion" field
   // return the question at that index
-  game = findGame(gameId);
+  game = findGame(roomCode);
   game.atQuestion += 1;
   
   if (game.atQuestion == game.questions.length) {
@@ -245,8 +269,6 @@ const getNextQuestion = (gameId) => {
 // - set game to inactive
 
 
-
-
 // createGame("1234", "KJ", (err, game) => {
 //   if (err) {
 //     console.error(err);
@@ -256,5 +278,12 @@ const getNextQuestion = (gameId) => {
 
 // addQuestion("How many hoes you got?", "1234");
 // votePlayer("1234", "67597ed7e687558ab23b1098", "675505ea22d896b1e6954880", true);
+// createGame("KJ", (err, game) => {
+//   if (err) {
+//     console.error(err);
+//   } else {
+//     console.log(game);
+//   }
+// });
 
 module.exports = generateRandomWord;
