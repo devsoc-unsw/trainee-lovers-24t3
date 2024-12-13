@@ -179,9 +179,39 @@ const addQuestion = async (questionContent, roomCode) => {
     await Promise.all([newQuestion.save(), newVotingSession.save(), game.save()]);
     console.log("Question saved:", newQuestion);
   } catch (err) {
-      console.error(err.message);
+    console.error(err.message);
   }
 };
+
+const storeAnswer = async (questionContent, playerId, response, roomCode) => {
+  try {
+    const game = await findGame(roomCode);
+    if (!game) {
+      throw new Error(`Game not found with roomCode: ${roomCode}`)
+    }
+
+    const question = await Question.findOne({ questionContent: questionContent });
+    if (!question) {
+      throw new Error(`Question not found with questionContent: ${questionContent}`)
+    }
+
+    const newResponse = new QuestionResponse({
+      qid: questionContent,
+      uid: playerId,
+      response: response
+    })
+  
+    await newResponse.save();
+
+    question.questionResponses.push(newResponse._id);
+    await question.save();
+
+    console.log(`${playerId} has answered ${questionContent}`);
+    
+  } catch (err) {
+    console.error(err.message);
+  }
+}
 
 const votePlayer = async (roomCode, questionId, playerId, response) => {
   try {
