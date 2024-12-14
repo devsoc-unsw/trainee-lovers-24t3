@@ -6,6 +6,7 @@ const userMap = require('./dbFunctions').userMap;
 const addQuestion = require('./dbFunctions').addQuestion;
 const storeAnswer = require('./dbFunctions').storeAnswer;
 const getQuestions = require('./dbFunctions').getQuestions;
+const votePlayer = require('./dbFunctions').votePlayer;
 
 function initializeSocketServer(server) {
   if (ioInstance) return ioInstance;
@@ -80,27 +81,47 @@ function initializeSocketServer(server) {
     socket.on('save-question', async (roomCode, questionsAnswered, userId) => {
       try {
         for (const question of questionsAnswered) {
-          await storeAnswer(question.qid, userId, question.response, roomCode);
+          const allAnswered = await storeAnswer(question.qid, userId, question.response, roomCode);
         }
 
+        // if all answered then emit all answered
+        ioInstance.to(roomCode).emit('all-answered');
+        
         console.log("All questions saved");
       } catch (error) {
         console.error(error);
       }
     });
 
-    socket.on('display-questions', async (roomCode) => {
+
+    socket.on('start-game', async (roomCode, callback) => {
       try {
         const questions = await getQuestions(roomCode);
         if (questions) {
-          ioInstance.to(roomCode).emit('display-questions', questions);
+          ioInstance.to(roomCode).emit('display-questions', { questions });
           console.log("Questions displayed to room:", roomCode);
           console.log(questions);
+          callback(null, { message: 'Game started successfully', questions });
         } 
       } catch (error) {
         console.error(error);
       }
-    })
+    });
+
+    socket.on('vote-player', async (roomCode, qid, pid, response) => {
+      try {
+        const allVoted = await votePlayer(roomCode, qid, pid, response);
+        console.log("Player ", pid, "voted for question:", qid, " with response:", response);
+
+        if (allVoted) {
+          // if all voted, then emit to display results and move onto next question
+          ioInstance.to(roomCode).emit('display-question-results', qid);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
   });
 
   console.log('Socket.IO server initialized');
