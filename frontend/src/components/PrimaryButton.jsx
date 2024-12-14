@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import useAuthStore from '../store/useAuthStore';
-import { useSocket } from '../context/socketContext';
-import { useEffect } from 'react';
+import { useRouter } from "next/navigation";
+import useAuthStore from "../store/useAuthStore";
+import { useSocket } from "../context/socketContext";
+import { useEffect } from "react";
 
 export default function PrimaryButton({ name, action }) {
   const socket = useSocket();
@@ -11,6 +11,7 @@ export default function PrimaryButton({ name, action }) {
   const {
     isHost,
     username,
+    questionsSelected,
     setIsHost,
     setShowEnterNameModal,
     setShowSelectQuestionsModal,
@@ -21,16 +22,19 @@ export default function PrimaryButton({ name, action }) {
   } = useAuthStore();
 
   useEffect(() => {
-    console.log('PrimaryButton mounted with:', name, action);
+    console.log("PrimaryButton mounted with:", name, action);
   }, [name, action]);
 
   const handleSocketResponse = (error, response) => {
     if (error) {
       console.error("Error creating room:", error.message);
+      return;
     } else if (isHost) {
       console.log("Room created successfully:", response);
     } else {
       console.log("joined successfully:", response);
+      setShowGameIdModal(false);
+      router.push('/lobby');
     }
     setRoomCode(response.roomCode);
     setUserId(response.userId);
@@ -44,8 +48,16 @@ export default function PrimaryButton({ name, action }) {
     socket.emit('join-room', roomCode, username, handleSocketResponse);
   }
 
+  const handleAddQuestionSocketResponse = (error, response) => {
+    if (error) {
+      console.error("Error adding question:", error.message);
+    } else {
+      console.log("Question added successfully:", response);
+    }
+  };
+
   const handleRedirect = () => {
-    if (action === 'createRoom') {
+    if (action === "createRoom") {
       setIsHost(true);
       setShowEnterNameModal(true);
     } else if (action === 'submitUsername') {
@@ -59,16 +71,19 @@ export default function PrimaryButton({ name, action }) {
       router.push('/question');
     } else if (action === 'enterGameId') {
       joinRoom();
-      setShowGameIdModal(false);
-      router.push('/lobby');
     } else if (action === 'selectQuestions') {
       createRoom();
-      setShowSelectQuestionsModal(false);
-      router.push('/lobby');
-    } else if (action === 'answerQuestions') {
-      router.push('/voting');
+      socket.emit(
+        "add-question",
+        roomCode,
+        questionsSelected,
+        handleAddQuestionSocketResponse
+      );
+      router.push("/lobby");
+    } else if (action === "answerQuestions") {
+      router.push("/voting");
     } else {
-      console.error('Invalid action provided:', action);
+      console.error("Invalid action provided:", action);
     }
   };
 
