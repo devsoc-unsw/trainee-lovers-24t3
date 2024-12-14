@@ -1,5 +1,6 @@
 import { useRouter } from "next/navigation";
 import useAuthStore from "@/store/useAuthStore";
+import { useSocket } from "@/context/socketContext";
 import PrimaryButton from "@/components/PrimaryButton";
 import SecondaryButton from "@/components/SecondaryButton";
 import { useEffect, useState } from "react";

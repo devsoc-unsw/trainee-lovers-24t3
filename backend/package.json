@@ -12,6 +12,7 @@
   "dependencies": {
     "mongodb": "^6.11.0",
     "mongoose": "^8.8.4",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
   }
 }

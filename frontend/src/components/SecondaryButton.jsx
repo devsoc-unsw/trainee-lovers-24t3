@@ -2,6 +2,7 @@
 
 import useAuthStore from "../store/useAuthStore";
 import { useRouter } from "next/navigation";
+import { useSocket } from "@/context/socketContext";
 
 export default function SecondaryButton({ name, action }) {
   const { setIsHost, setShowEnterNameModal, setShowSelectQuestionsModal } =
