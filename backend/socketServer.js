@@ -117,12 +117,34 @@ function initializeSocketServer(server) {
           console.error('No players could be chosen.');
           return callback({ error: 'No players available to choose.' });
         }
-
-        console.log('Players chosen:', players);
-
-        // return the boys
-        // {player1: username, player2: username}
-        callback(null, players);
+        
+        switch (players.status) {
+          case 'NEXT_QUESTION':
+            console.log('All players have been chosen, moving to the next question.');
+    
+            ioInstance.to(roomCode).emit('next-question', { questionId: players.qid });
+            return callback(null, { status: 'NEXT_QUESTION', message: 'Moving to the next question.' });
+    
+          case 'NO_MORE_QUESTIONS':
+            console.log('No more questions to display. Ending the game.');
+    
+            ioInstance.to(roomCode).emit('end-game');
+            return callback(null, { status: 'NO_MORE_QUESTIONS', message: 'Game ended.' });
+    
+          case 'PLAYERS_SELECTED':
+            console.log('Players chosen:', players);
+    
+            // Send the chosen players to the client
+            return callback(null, {
+              status: 'PLAYERS_SELECTED',
+              player1: players.player1,
+              player2: players.player2,
+            });
+    
+          default:
+            console.error('Unknown status received from choosePlayers:', players.status);
+            return callback({ error: 'Unknown status received.' });
+        }
       } catch (error) {
         console.error(error);
         callback({ error: 'Error choosing players' });

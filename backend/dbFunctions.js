@@ -240,7 +240,8 @@ const votePlayer = async (roomCode, questionId, playerId, response) => {
     // find the votingSession
     const updateVotes = await VotingSession.findOneAndUpdate(
       { roomCode: roomCode, qid: questionId },
-      { $push: { votingResponse: votingResponse._id } }
+      { $push: { votingResponse: votingResponse._id } },
+      { new: true} // this returns the updated document
     );
 
     if (updateVotes) {
@@ -267,6 +268,7 @@ const votePlayer = async (roomCode, questionId, playerId, response) => {
     }
   } catch (err) {
     console.error(err.message);
+    throw err;
   }
 }
 
@@ -282,10 +284,12 @@ const chooseOneRandomPlayer = (players) => {
 
 const choosePlayers = async (roomCode, questionId) => {
   try {
-    const game = await findGame(roomCode).populate('users', 'username');
+    const game = await findGame(roomCode);
     if (!game) {
       throw new Error(`Game not found for roomCode: ${roomCode}`);
     }
+
+    await game.populate('users', 'username');
 
     const players = game.users; 
 
@@ -296,12 +300,12 @@ const choosePlayers = async (roomCode, questionId) => {
         qid: questionId,
         votingResponse: [],
         playersChosen: [], 
-        allChosenPlayers: [],
+        allPlayersChosen: [],
       });
     }
 
     // will only cosign of the id.
-    const allChosenPlayers = new Set(votingSession.allChosenPlayers.map(player => player.toString()));
+    const allChosenPlayers = new Set(votingSession.allPlayersChosen.map(player => player.toString()));
 
     // If no players are chosen yet (first round)
     if (votingSession.playersChosen.length < 2) {
@@ -315,32 +319,48 @@ const choosePlayers = async (roomCode, questionId) => {
 
       // player chosen are the players currently being voted on
       votingSession.playersChosen = [player1._id, player2._id];
-      votingSession.allChosenPlayers.push(player1._id, player2._id);
+      votingSession.allPlayersChosen.push(player1._id, player2._id);
       await votingSession.save();
 
-      return { player1: player1.username, player2: player2.username };
+      console.log('First round ting: Players chosen:', { player1: player1.username, player2: player2.username });
+      return { status: 'PLAYERS_SELECTED', player1: player1.username, player2: player2.username };
     }
 
     // this will be 0 or 1 depending on votes
     const chosenWinnerIndex = await getCurrentWinner(roomCode, questionId);
+    console.log('Chosen winner index:', chosenWinnerIndex);
+    // check if chosenWinnerIndex is null;
+    if (chosenWinnerIndex === null) {
+      throw new Error('No voting responses so cannot choose a winner.');
+    };
     const currentWinnerId = votingSession.playersChosen[chosenWinnerIndex];
     const currentWinner = players.find(player => player._id.toString() === currentWinnerId.toString());
     const remainingPlayers = players.filter(player => !allChosenPlayers.has(player._id.toString()));
 
     if (remainingPlayers.length === 0) {
-      throw new Error('No more players to replace the loser.');
+      // then should return an indicator to move onto next question
+      console.log('No more players to choose from');
+
+      //find next question
+      const nextQuestion = getNextQuestion(roomCode);
+      if (!nextQuestion) {
+        console.log('No more questions to choose from');
+        return { status: 'NO_MORE_QUESTIONS' };
+      }
+
+      return { status: 'NEXT_QUESTION', newQuestion: nextQuestion };
     }
 
     const newPlayer = chooseOneRandomPlayer(remainingPlayers);
 
     votingSession.playersChosen = [currentWinner._id, newPlayer._id];
-    votingSession.allChosenPlayers.push(newPlayer._id);
+    votingSession.allPlayersChosen.push(newPlayer._id);
     // reset the voting responses
     votingSession.votingResponse = [];
 
     await votingSession.save();
-
-    return { player1: currentWinner.username, player2: newPlayer.username };
+    console.log('Players chosen:', { player1: currentWinner.username, player2: newPlayer.username });
+    return { status: 'PLAYERS_SELECTED', player1: currentWinner.username, player2: newPlayer.username };
   } catch (error) {
     console.error('Error in choosePlayers:', error.message);
     throw error;
@@ -388,20 +408,41 @@ const getCurrentWinner = async (roomCode, questionId) => {
   return winner;
 }
 
-const getNextQuestion = (roomCode) => {
-  // increment game schema "atQuestion" field
-  // return the question at that index
-  game = findGame(roomCode);
-  game.atQuestion += 1;
-  
-  if (game.atQuestion == game.questions.length) {
-    // TODO: end game
-    return null;
-  }
+const getNextQuestion = async (roomCode) => {
+  try {
+    const game = await findGame(roomCode);
+    if (!game) {
+      throw new Error(`Game not found for roomCode: ${roomCode}`);
+    }
 
-  const nextQuestion = game.questions[game.atQuestion];
-  return nextQuestion;
-}
+    game.atQuestion += 1;
+
+    if (game.atQuestion >= game.questions.length) {
+      console.log(game.atQuestion, game.questions.length);
+      console.log('All questions completed, ending game.');
+      game.isActive = false;
+      // Mark the game as inactive
+      await game.save();
+       // Signal that there are no more questions
+      return null;
+    }
+
+    await game.save();
+
+    const nextQuestionId = game.questions[game.atQuestion];
+    const nextQuestion = await Question.findById(nextQuestionId);
+
+    if (!nextQuestion) {
+      throw new Error(`Question not found for ID: ${nextQuestionId}`);
+    }
+
+    return nextQuestion;
+  } catch (error) {
+    console.error('Error in getNextQuestion:', error.message);
+    throw error;
+  }
+};
+
 
 const getQuestions = async (roomCode) => {
   try {
