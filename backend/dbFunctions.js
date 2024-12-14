@@ -97,12 +97,38 @@ const joinGame = async (roomCode, username) => {
     game.users.push(newUser._id);
     await game.save();
 
-    return game;
+    return callback(null, {
+      userId: newUser._id,
+      roomCode: roomCode
+    });
+
   } catch (err) {
     console.error(err.message);
-    return null;
+    return callback(err, null);
   }
 }
+
+const userMap = async (roomCode) => {
+  try {
+    const game = await findGame(roomCode);
+    if (!game) {
+      throw new Error(`Game not found for roomCode: ${roomCode}`);
+    }
+
+    await game.populate('users');
+    // might need to return more 
+    return game.users.map((user) => ({
+      username: user.username,
+      points: user.points,
+      isActive: user.isActive,
+      isHost: user.isHost,
+    }));
+  } catch (error) {
+    console.error(`Error in userMap: ${error.message}`);
+    throw error; 
+  }
+}
+
 
 // need to correspond each response to this quesiton
 const addQuestion = async (questionContent, roomCode) => {
@@ -310,4 +336,5 @@ module.exports = {
   chooseRandomPlayer,
   getCurrentWinner,
   getNextQuestion,
+  userMap
 };

@@ -14,23 +14,6 @@ const Page = () => {
     'Kiss count?'
   ]
 
-  const SocketComponent = () => {
-    const [questions, setQuestions] = useState('');
-  
-    useEffect(() => {
-      // Connect to the Socket.IO server
-      const socket = useSocket();
-  
-      socket.on('sendData', (data) => {
-        console.log('Data received from server:', data);
-        setQuestions(data);
-      });
-  
-      return () => {
-        socket.disconnect();
-      };
-    }, []);
-
   return (
     <div className='flex w-full h-screen bg-white text-center text-black text-3xl'>
       <DecorativeShapesBackground />

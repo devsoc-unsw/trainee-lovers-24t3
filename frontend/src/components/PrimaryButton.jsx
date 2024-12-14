@@ -62,15 +62,12 @@ export default function PrimaryButton({ name, action }) {
       router.push("/lobby");
     } else if (action === "selectQuestions") {
       setShowSelectQuestionsModal(false);
-
-      questionsSelected.map((question) => {
-        socket.emit(
-          "add-question",
-          roomCode,
-          question.keyword,
-          handleAddQuestionSocketResponse
-        );
-      });
+      socket.emit(
+        "add-question",
+        roomCode,
+        questionsSelected,
+        handleAddQuestionSocketResponse
+      );
     } else if (action === "answerQuestions") {
       router.push("/voting");
     } else {
