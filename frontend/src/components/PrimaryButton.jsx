@@ -22,11 +22,13 @@ export default function PrimaryButton({ name, action }) {
     console.log('PrimaryButton mounted with:', name, action);
   }, [name, action]);
 
-  const handleSocketResponse = (response) => {
-    if (response.error) {
-      console.error('Socket error:', response.error);
+  const handleSocketResponse = (error, response) => {
+    if (error) {
+        console.error("Error creating room:", error.message);
     } else {
-      console.log('Socket response:', response);
+        console.log("Room created successfully:", response);
+        console.log("Room Code:", response.roomCode);
+        console.log("User ID:", response.userId);
     }
   };
 
@@ -37,14 +39,12 @@ export default function PrimaryButton({ name, action }) {
     } else if (action === 'submitUsername') {
       if (isHost) {
         setShowSelectQuestionsModal(true);
-        const roomCode = 'ROOM123';
-        const uid = 'USER123';
-        socket.emit('create-room', username, uid, roomCode);
+        socket.emit('create-room', username, handleSocketResponse);
+
       } else {
         setShowGameIdModal(true);
-        const roomCode = 'ROOM123';
-        const uid = 'USER123';
         socket.emit('join-room', roomCode, username, uid, handleSocketResponse);
+        
       }
       setShowEnterNameModal(false);
     } else if (action === 'startGame') {
