@@ -74,8 +74,6 @@ function initializeSocketServer(server) {
     });
 
 
-
-
   });
   console.log('Socket.IO server initialized');
   return ioInstance;
