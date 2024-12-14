@@ -5,7 +5,7 @@ import useAuthStore from '../store/useAuthStore';
 import { useSocket } from '../context/socketContext';
 import { useEffect } from 'react';
 
-export default function PrimaryButton({ name, action }) {
+export default function PrimaryButton({ name, action, handleAction }) {
   const socket = useSocket();
   const router = useRouter();
   const {
@@ -15,7 +15,6 @@ export default function PrimaryButton({ name, action }) {
     setShowEnterNameModal,
     setShowSelectQuestionsModal,
     setShowGameIdModal,
-    setShowStartGameModal,
     setRoomCode,
     setUserId,
     roomCode, 
@@ -61,9 +60,12 @@ export default function PrimaryButton({ name, action }) {
       router.push('/lobby');
     } else if (action === 'selectQuestions') {
       joinOrCreateRoom();
+      if (isHost) {
+      }
       setShowSelectQuestionsModal(false);
       router.push('/lobby');
-    } else if (action === 'answerQuestions') {
+    } else if (action === 'submitAnswers') {
+  
       router.push('/voting');
     } else {
       console.error('Invalid action provided:', action);
@@ -73,7 +75,7 @@ export default function PrimaryButton({ name, action }) {
   return (
     <div
       className="flex items-center justify-center w-8/12 h-16 py-2 text-3xl lg:text-5xl text-white bg-mid-blue font-mouse rounded-md z-10 cursor-pointer hover:border"
-      onClick={handleRedirect}
+      onClick={action === "submitAnswers" ? handleAction : handleRedirect}
     >
       {name}
     </div>
