@@ -14,7 +14,7 @@ const GameIdModal = () => {
     } else {
       setRoomCode(response.roomCode);
       setUserId(response.userId);
-      router.push('/lobby');
+      router.push('/question');
       setShowGameIdModal(false);
     }
   }
@@ -24,7 +24,17 @@ const GameIdModal = () => {
     // If not, return error, else navigate to lobby page
     if (event.key === 'Enter') {
       socket.emit('join-room', roomCode, username, handleSocketResponse);
+      // look for 'update-room' event
+      socket.on('update-room', (users) => {
+        console.log('Users in room:', users);
+      });
     }
+  }
+
+  const handleClick = () => {
+    // Connect to backend and check if the gameId exists
+    // If not, return error, else navigate to lobby page
+    socket.emit('join-room', roomCode, username, handleSocketResponse);
   }
 
   return (
@@ -38,7 +48,7 @@ const GameIdModal = () => {
         onKeyDown={(e) => handleKeyDown(e)}
         className='text-center w-8/12 p-4 text-black text-3xl border border-gray-300 rounded-lg outline-[#8093F1]'
       />
-      <PrimaryButton name='Submit' action='enterGameId'/>
+      <PrimaryButton name='Submit' action='enterGameId' handleAction={handleClick}/>
     </div>
   )
 }
