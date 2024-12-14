@@ -17,7 +17,7 @@ const useAuthStore = create(
     setShowGameIdModal : ( showModal ) => set({ showGameIdModal : showModal }),
     setShowStartGameModal : ( showModal ) => set({ showStartGameModal: showModal }),
     setShowSelectQuestionsModal: ( showModal ) => set({ showSelectQuestionsModal : showModal }),
-    setUserId: (id) => ({ userId: id })
+    setUserId: (id) => set({ userId: id })
 	})
 )
 

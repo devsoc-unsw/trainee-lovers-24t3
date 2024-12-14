@@ -15,11 +15,9 @@ export default function PrimaryButton({ name, action }) {
     setShowEnterNameModal,
     setShowSelectQuestionsModal,
     setShowGameIdModal,
-    setShowStartGameModal,
     setRoomCode,
     setUserId,
-    roomCode, 
-    userId
+    roomCode,
   } = useAuthStore();
 
   useEffect(() => {
@@ -28,39 +26,43 @@ export default function PrimaryButton({ name, action }) {
 
   const handleSocketResponse = (error, response) => {
     if (error) {
-        console.error("Error creating room:", error.message);
+      console.error("Error creating room:", error.message);
+    } else if (isHost) {
+      console.log("Room created successfully:", response);
     } else {
-        console.log("Room created successfully:", response);
-        setRoomCode(response.roomCode);
-        setUserId(response.userId);
+      console.log("joined successfully:", response);
     }
+    setRoomCode(response.roomCode);
+    setUserId(response.userId);
   };
 
-  const joinOrCreateRoom = () => {
-    if (isHost) {
-      setShowSelectQuestionsModal(true);
-      socket.emit('create-room', username, handleSocketResponse);
+  const createRoom = () => {
+    socket.emit('create-room', username, handleSocketResponse);
+  }
 
-    } else {
-      setShowGameIdModal(true);
-      socket.emit('join-room', roomCode, username, userId, handleSocketResponse);
-    }
-  };
+  const joinRoom = () => {
+    socket.emit('join-room', roomCode, username, handleSocketResponse);
+  }
 
   const handleRedirect = () => {
     if (action === 'createRoom') {
       setIsHost(true);
       setShowEnterNameModal(true);
     } else if (action === 'submitUsername') {
-
       setShowEnterNameModal(false);
+      if (isHost) {
+        setShowSelectQuestionsModal(true);
+      } else {
+        setShowGameIdModal(true);
+      }
     } else if (action === 'startGame') {
       router.push('/question');
     } else if (action === 'enterGameId') {
+      joinRoom();
       setShowGameIdModal(false);
       router.push('/lobby');
     } else if (action === 'selectQuestions') {
-      joinOrCreateRoom();
+      createRoom();
       setShowSelectQuestionsModal(false);
       router.push('/lobby');
     } else if (action === 'answerQuestions') {

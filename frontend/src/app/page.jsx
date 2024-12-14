@@ -9,7 +9,7 @@ import GameIdModal from "@/components/GameIdModal";
 import SelectQuestionsModal from "@/components/SelectQuestionsModal";
 
 export default function Page() {
-  const { showEnterNameModal, showGameIdModal, showStartGameModal, showSelectQuestionsModal } = useAuthStore();
+  const { showEnterNameModal, showGameIdModal, showSelectQuestionsModal } = useAuthStore();
 
   return (
     <div className="flex relative flex-col w-full h-screen bg-white items-center justify-center gap-5">
@@ -18,7 +18,7 @@ export default function Page() {
         {showEnterNameModal && <EnterNameModal />}
         {showGameIdModal && <GameIdModal />}
         {showSelectQuestionsModal && <SelectQuestionsModal />}
-        {!showEnterNameModal && !showGameIdModal && !showSelectQuestionsModal && !showStartGameModal && (
+        {!showEnterNameModal && !showGameIdModal && !showSelectQuestionsModal && (
           <div className="flex flex-col w-full md:w-1/3 gap-2 items-center justify-center">
             <PrimaryButton name="HOST" action="createRoom" />
             <SecondaryButton name="JOIN" action="joinRoom" />
