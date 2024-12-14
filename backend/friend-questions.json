@@ -1,0 +1,44 @@
+{
+  "questions" : [
+    {
+      "keyword": "shower frequency",
+      "question": "How many times do you shower per day?"
+    },
+    {
+      "keyword": "romantic dates",
+      "question": "How many romantic dates have you been on?"
+    },
+    {
+      "keyword": "screen time",
+      "question": "how many hours do you spend on your phone daily?"
+    }, 
+    {
+      "keyword": "gaming hours",
+      "question": "How many hours do you spend on playing game per week?"
+    }, 
+    {
+      "keyword": "language proficiency",
+      "question": "How many languages can you speak?"
+    },
+    {
+      "keyword": "coding hours",
+      "question": "How many hours do you spend coding a day?"
+    }, 
+    {
+      "keyword": "weekly gym visits",
+      "question": "How many times do you go to the gym each week?"
+    }, 
+    {
+      "keyword": "blackout number",
+      "question": "How many times have you blacked out?"
+    }, 
+    {
+      "keyword": "scroll hours",
+      "question": "How many hours do you spend on scrolling TikTok and reels per day?"
+    }, 
+    {
+      "keyword": "Spotify minutes",
+      "question": "How many minutes have you spent listening on Spotify this week?"
+    }
+  ]
+}
