@@ -15,6 +15,7 @@ const generateDefaultQuestions = () => {
     questions.push({
       question: el.question,
       level: "friend level",
+      keyword: el.keyword,
     });
   });
 
@@ -22,6 +23,7 @@ const generateDefaultQuestions = () => {
     questions.push({
       question: el.question,
       level: "close friend level",
+      keyword: el.keyword,
     });
   });
 
@@ -33,7 +35,7 @@ const questions = generateDefaultQuestions();
 const SelectQuestionsModal = () => {
   const [numQuestion, setNumQuestion] = useState(5);
   const [questionsType, setQuestionsType] = useState("custom");
-  const [questionList, setQuestionList] = useState([]);
+  const { questionsSelected, setQuestionsSelected } = useAuthStore();
 
   const getRandomInt = (max) => {
     return Math.floor(Math.random() * max);
@@ -64,7 +66,7 @@ const SelectQuestionsModal = () => {
       questionsList = [];
     }
 
-    setQuestionList(questionsList);
+    setQuestionsSelected(questionsList);
   };
 
   useEffect(() => {
@@ -73,16 +75,18 @@ const SelectQuestionsModal = () => {
 
   const displayQuestions = () => {
     const handleClickQuestion = (index) => {
-      const copy = [...questionList];
-      if (questionList.includes(questions[index])) {
-        const qIndex = questionList.findIndex((q) => q === questions[index]);
+      const copy = [...questionsSelected];
+      if (questionsSelected.includes(questions[index])) {
+        const qIndex = questionsSelected.findIndex(
+          (q) => q === questions[index]
+        );
         copy.splice(qIndex, 1);
       } else {
-        if (questionList.length === numQuestion) return;
+        if (questionsSelected.length === numQuestion) return;
         copy.push(questions[index]);
       }
 
-      setQuestionList(copy);
+      setQuestionsSelected(copy);
     };
 
     return (
@@ -102,7 +106,7 @@ const SelectQuestionsModal = () => {
           return (
             <div
               className={
-                questionList.includes(el)
+                questionsSelected.includes(el)
                   ? "flex items-center justify-center text-2xl lg:text-5xl text-white bg-mid-blue font-mouse rounded-md z-10 cursor-pointer text-nowrap"
                   : "flex items-center justify-center text-2xl lg:text-5xl text-mid-blue bg-white border-[1px] border-mid-blue font-mouse rounded-md z-10 cursor-pointer text-nowrap"
               }
@@ -172,7 +176,7 @@ const SelectQuestionsModal = () => {
       </div>
       <div className="w-full flex flex-col gap-2 flex-wrap">
         <p className="w-full text-3xl text-[#4154AF] text-center overflow-auto">
-          {`Selected ${questionList.length} Questions`}
+          {`Selected ${questionsSelected.length} Questions`}
         </p>
         {displayQuestions()}
       </div>
