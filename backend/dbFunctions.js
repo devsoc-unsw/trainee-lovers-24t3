@@ -145,6 +145,8 @@ const addQuestion = async (questionContent, keyword, roomCode) => {
       roomCode: roomCode,
       qid: newQuestion._id,
       votingResponse: [],
+      playersChosen: [],
+      allChosenPlayers: [],
     });
 
 
@@ -268,32 +270,84 @@ const votePlayer = async (roomCode, questionId, playerId, response) => {
   }
 }
 
-// once all voted return 
+const chooseTwoRandomPlayers = (players) => {
+  const shuffledPlayers = [...players].sort(() => 0.5 - Math.random());
+  return shuffledPlayers.slice(0, 2);
+};
 
-// pass in previous player ids so we don't choose the same players
-const chooseRandomPlayer = async (prevPlayerIds, roomCode, questionId) => {
-  const game = await findGame(roomCode);
-  const players = game.users;
+const chooseOneRandomPlayer = (players) => {
   const randomIndex = Math.floor(Math.random() * players.length);
-  const randomPlayer = players[randomIndex];
-  
-  if (prevPlayerIds.length === players.length) {
-    console.error("All players have been chosen");
-    // TODO: End game / get next question
-    // Currently undefined behaviour
-    return null;
+  return players[randomIndex];
+};
+
+const choosePlayers = async (roomCode, questionId) => {
+  try {
+    const game = await findGame(roomCode);
+    if (!game) {
+      throw new Error(`Game not found for roomCode: ${roomCode}`);
+    }
+
+    const players = game.users; 
+
+    let votingSession = await VotingSession.findOne({ roomCode, qid: questionId });
+    if (!votingSession) {
+      votingSession = await VotingSession.create({
+        roomCode,
+        qid: questionId,
+        votingResponse: [],
+        playersChosen: [], 
+        allChosenPlayers: [],
+      });
+    }
+
+    const allChosenPlayers = new Set(votingSession.allChosenPlayers);
+
+    // If no players are chosen yet (first round)
+    if (votingSession.playersChosen.length < 2) {
+      // Select two random unique players
+      const unchosenPlayers = players.filter(player => !allChosenPlayers.has(player.toString()));
+      if (unchosenPlayers.length < 2) {
+        throw new Error('Not enough unchosen players to start the first round.');
+      }
+
+      const [player1, player2] = chooseTwoRandomPlayers(unchosenPlayers);
+
+      // player chosen are the players currently being voted on
+      votingSession.playersChosen = [player1, player2];
+      votingSession.allChosenPlayers.push(player1, player2);
+      await votingSession.save();
+
+      return { player1, player2 };
+    }
+
+    // this will be 0 or 1 depending on votes
+    const chosenWinner = getCurrentWinner(votingSession._id);
+    const currentWinner = votingSession.playersChosen[chosenWinner];
+    const remainingPlayers = players.filter(player => !allChosenPlayers.has(player.toString()));
+
+    if (remainingPlayers.length === 0) {
+      throw new Error('No more players to replace the loser.');
+    }
+
+    const newPlayer = chooseOneRandomPlayer(remainingPlayers);
+
+    votingSession.playersChosen = [currentWinner, newPlayer];
+    votingSession.allChosenPlayers.push(newPlayer);
+    // reset the voting responses
+    votingSession.votingResponse = [];
+
+    await votingSession.save();
+
+    return { player1: currentWinner, player2: newPlayer };
+  } catch (error) {
+    console.error('Error in choosePlayers:', error.message);
+    throw error;
   }
+};
 
-  if (prevPlayerIds.includes(randomPlayer)) {
-    return chooseRandomPlayer(prevPlayerIds, roomCode, questionId);
-  }
-
-  return randomPlayer;
-
-}
 
 // obtains the winner with the more votes in the current voting ession
-const getCurrentWinner = async (roomCode, questionId, votingSessionId) => {
+const getCurrentWinner = async (roomCode, questionId) => {
   // find the voting session
   const votingSession = await VotingSession.findOne({ roomCode: roomCode, qid: questionId });
   if (!votingSession) {
@@ -301,24 +355,35 @@ const getCurrentWinner = async (roomCode, questionId, votingSessionId) => {
     return null;
   }
 
-  // find the voting responses
+  // find the voting responses correlating to the current question
   const votingResponses = await VotingResponse.find({ _id: { $in: votingSession.votingResponse } });
-  if (!votingResponses) {
-    console.error(`VotingResponses not found for votingSessionId ${votingSessionId}`);
+  if (!votingResponses || votingResponses.length === 0) {
+    console.error(`no votingResponses`);
     return null;
   }
 
   // count the votes
-  const voteCount = votingResponses.reduce((acc, response) => {
-    if (response.response) {
-      acc[response.uid] = acc[response.uid] ? acc[response.uid] + 1 : 1;
-    }
-    return acc;
-  }, {});
+  const voteResult = votingResponses.reduce(
+    (acc, response) => {
+      if (response.response === 1) {
+        acc.secondPersonVotes += 1; // Increment votes for the second person
+      } else if (response.response === 0) {
+        acc.firstPersonVotes += 1; // Increment votes for the first person
+      }
+      return acc;
+    },
+    { firstPersonVotes: 0, secondPersonVotes: 0 } // Initial counts
+  );
 
-  // find the player with the most votes
-  const winnerId = Object.keys(voteCount).reduce((a, b) => voteCount[a] > voteCount[b] ? a : b);
-  return winnerId;
+  let winner = 0;
+  if (voteResult.firstPersonVotes > voteResult.secondPersonVotes) {
+    winner = 0;
+  } else if (voteResult.secondPersonVotes > voteResult.firstPersonVotes) {
+    winner = 1;
+  } else {
+    winner = 0; // just give firstPerson the win lawl
+  }
+  return winner;
 }
 
 const getNextQuestion = (roomCode) => {
@@ -374,7 +439,7 @@ module.exports = {
   addQuestion,
   storeAnswer,
   votePlayer,
-  chooseRandomPlayer,
+  choosePlayers,
   getCurrentWinner,
   getNextQuestion,
   userMap,

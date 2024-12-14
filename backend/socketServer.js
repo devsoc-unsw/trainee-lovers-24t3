@@ -7,6 +7,8 @@ const addQuestion = require('./dbFunctions').addQuestion;
 const storeAnswer = require('./dbFunctions').storeAnswer;
 const getQuestions = require('./dbFunctions').getQuestions;
 const votePlayer = require('./dbFunctions').votePlayer;
+const getCurrentWinner = require('./dbFunctions').getCurrentWinner;
+const choosePlayers = require('./dbFunctions').choosePlayers;
 
 function initializeSocketServer(server) {
   if (ioInstance) return ioInstance;
@@ -34,7 +36,6 @@ function initializeSocketServer(server) {
             socket.join(result.roomCode);
             const users = await userMap(roomCode);
             ioInstance.to(roomCode).emit('update-room', users);
-
             console.log(`${username} created room:`, result.roomCode);
             callback(null, result);
           }
@@ -108,6 +109,27 @@ function initializeSocketServer(server) {
       }
     });
 
+    // choose the players to vote on
+    socket.on('choose-players', async (roomCode, questionId, callback) => {
+      try {
+        const players = await choosePlayers(roomCode, questionId);
+        if (!players) {
+          console.error('No players could be chosen.');
+          return callback({ error: 'No players available to choose.' });
+        }
+
+        console.log('Players chosen:', players);
+
+        // return the boys
+        // in the format { player1: <user_object>, player2: <user_object>}
+        // to get just the usernames do response.player1.username from the callback.
+        callback(null, players);
+      } catch (error) {
+        console.error(error);
+        callback({ error: 'Error choosing players' });
+      }
+    });
+
     socket.on('vote-player', async (roomCode, qid, pid, response) => {
       try {
         const allVoted = await votePlayer(roomCode, qid, pid, response);
@@ -122,6 +144,16 @@ function initializeSocketServer(server) {
       }
     });
 
+    // retrieving winner
+    socket.on('get-winner', async (roomCode, questionId, callback) => {
+      try {
+        // will return 0 for first person 1 for second person
+        const winner = await getCurrentWinner(roomCode, questionId);
+        callback(null, winner);
+      } catch (error) {
+        console.error(error);
+      }
+    });
   });
 
   console.log('Socket.IO server initialized');
