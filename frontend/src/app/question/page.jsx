@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react';
 import QuestionBox from '@/components/QuestionBox';
 import DecorativeShapesBackground from '@/components/DecorativeShapesBackground';
 import PrimaryButton from '@/components/PrimaryButton';

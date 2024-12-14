@@ -1,8 +1,5 @@
-import useAuthStore from "@/store/useAuthStore";
-import React, { useState } from "react";
 
-export default function QuestionBox({ question, key }) {
-  // const [answer, setAnswer] = useState("");
+export default function QuestionBox({ question }) {
   return (
     <div className="bg-[#A1CDF7] w-[350px] h-[120px] rounded-[30px] content-center text-center shadow-md shadow-[#01136F] p-2 font-mouse">
       <div className="text-3xl text-[#01136F]">

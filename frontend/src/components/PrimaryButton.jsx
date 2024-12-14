@@ -2,12 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import useAuthStore from "../store/useAuthStore";
+import usePlayersStore from "@/store/usePlayersStore";
 import { useSocket } from "../context/socketContext";
 import { useEffect } from "react";
 
 export default function PrimaryButton({ name, action }) {
   const socket = useSocket();
   const router = useRouter();
+
   const {
     isHost,
     username,
@@ -20,6 +22,7 @@ export default function PrimaryButton({ name, action }) {
     setUserId,
     roomCode,
   } = useAuthStore();
+  const { setPlayers} = usePlayersStore();
 
   useEffect(() => {
     console.log("PrimaryButton mounted with:", name, action);
@@ -40,12 +43,18 @@ export default function PrimaryButton({ name, action }) {
     setUserId(response.userId);
   };
 
+  const handleUpdateRoom = (userDetails) => {
+    setPlayers(userDetails.map(u => u.username))
+  }
+
   const createRoom = () => {
     socket.emit('create-room', username, handleSocketResponse);
+    socket.on('update-room', handleUpdateRoom)
   }
 
   const joinRoom = () => {
     socket.emit('join-room', roomCode, username, handleSocketResponse);
+    socket.on('update-room', handleUpdateRoom)
   }
 
   const handleAddQuestionSocketResponse = (error, response) => {
