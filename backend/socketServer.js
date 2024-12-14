@@ -1,6 +1,6 @@
 let ioInstance;
-let rooms = {};
 
+const createGame = require('./dbFunctions').createGame;
 
 function initializeSocketServer(server) {
 
@@ -9,28 +9,34 @@ function initializeSocketServer(server) {
   const { Server } = require('socket.io');
   ioInstance = new Server(server, {
     cors: {
-      origin: ['http://localhost:3000', 'https://trainee-warden-24t2-keyword.vercel.app', 'http://localhost:3001', 'https://warden-games.vercel.app'],
-      methods: ["GET", "POST"]
+      origin: ['http://localhost:3000', 'http://localhost:3001'],
+      methods: ["GET", "POST", "DELETE"]
     },
   });
 
   ioInstance.on('connection', (socket) => {
     console.log('New connection:', socket.id);
 
-    socket.on('create-room', (username, uid, roomCode) => {
-      rooms[roomCode] = {
-        host: uid,
-        users: [{ socket: socket.id, username, uid, readyStatus: false, roundLoaded: false }],
-        gameStart: false,
-        timer: 240,
-        defaultTime: 240,
-        intervalId: null
-      };
+    socket.on('create-room', async (username, callback) => {
+      try {
+        createGame(username, (err, result) => {
+          if (err) {
+            console.error("Error creating room: ", err);
+            // send a callback to the client with the error message
+            callback({ error: err });
+          } else {
+            const roomCode = result.roomCode;
+            socket.join(result.roomCode);
+            ioInstance.to(roomCode).emit('update-room', userMap(roomCode));
 
-      socket.join(roomCode);
-      ioInstance.to(roomCode).emit('update-room', userMap(roomCode));
-      console.log(`${username} created room: ${roomCode}`);
-      console.log(rooms);
+            console.log(`${username} created room:`, result.roomCode);
+            callback(null, result);
+          }
+        });
+      } catch (error) {
+        console.error(error);
+        callback({ error: err });
+      }
     });
 
     socket.on('join-room', (roomCode, username, uid, callback) => {
