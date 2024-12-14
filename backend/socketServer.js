@@ -7,6 +7,8 @@ const addQuestion = require('./dbFunctions').addQuestion;
 const storeAnswer = require('./dbFunctions').storeAnswer;
 const getQuestions = require('./dbFunctions').getQuestions;
 const votePlayer = require('./dbFunctions').votePlayer;
+const getCurrentWinner = require('./dbFunctions').getCurrentWinner;
+const choosePlayers = require('./dbFunctions').choosePlayers;
 
 function initializeSocketServer(server) {
 
@@ -116,6 +118,48 @@ function initializeSocketServer(server) {
       }
     });
 
+    // choose the players to vote on
+    socket.on('choose-players', async (roomCode, questionId, callback) => {
+      try {
+        const players = await choosePlayers(roomCode, questionId);
+        if (!players) {
+          console.error('No players could be chosen.');
+          return callback({ error: 'No players available to choose.' });
+        }
+        
+        switch (players.status) {
+          case 'NEXT_QUESTION':
+            console.log('All players have been chosen, moving to the next question.');
+    
+            ioInstance.to(roomCode).emit('next-question', { questionId: players.qid });
+            return callback(null, { status: 'NEXT_QUESTION', message: 'Moving to the next question.' });
+    
+          case 'NO_MORE_QUESTIONS':
+            console.log('No more questions to display. Ending the game.');
+    
+            ioInstance.to(roomCode).emit('end-game');
+            return callback(null, { status: 'NO_MORE_QUESTIONS', message: 'Game ended.' });
+    
+          case 'PLAYERS_SELECTED':
+            console.log('Players chosen:', players);
+    
+            // Send the chosen players to the client
+            return callback(null, {
+              status: 'PLAYERS_SELECTED',
+              player1: players.player1,
+              player2: players.player2,
+            });
+    
+          default:
+            console.error('Unknown status received from choosePlayers:', players.status);
+            return callback({ error: 'Unknown status received.' });
+        }
+      } catch (error) {
+        console.error(error);
+        callback({ error: 'Error choosing players' });
+      }
+    });
+
     socket.on('vote-player', async (roomCode, qid, pid, response) => {
       try {
         const allVoted = await votePlayer(roomCode, qid, pid, response);
@@ -130,6 +174,16 @@ function initializeSocketServer(server) {
       }
     });
 
+    // retrieving winner
+    socket.on('get-winner', async (roomCode, questionId, callback) => {
+      try {
+        // will return 0 for first person 1 for second person
+        const winner = await getCurrentWinner(roomCode, questionId);
+        callback(null, winner);
+      } catch (error) {
+        console.error(error);
+      }
+    });
   });
 
   console.log('Socket.IO server initialized');
