@@ -12,6 +12,7 @@ export default function PrimaryButton({ name, action }) {
     isHost,
     username,
     questionsSelected,
+    questionsRes,
     setIsHost,
     setShowEnterNameModal,
     setShowSelectQuestionsModal,
