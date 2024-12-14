@@ -282,7 +282,7 @@ const chooseOneRandomPlayer = (players) => {
 
 const choosePlayers = async (roomCode, questionId) => {
   try {
-    const game = await findGame(roomCode);
+    const game = await findGame(roomCode).populate('users', 'username');
     if (!game) {
       throw new Error(`Game not found for roomCode: ${roomCode}`);
     }
@@ -300,12 +300,13 @@ const choosePlayers = async (roomCode, questionId) => {
       });
     }
 
-    const allChosenPlayers = new Set(votingSession.allChosenPlayers);
+    // will only cosign of the id.
+    const allChosenPlayers = new Set(votingSession.allChosenPlayers.map(player => player.toString()));
 
     // If no players are chosen yet (first round)
     if (votingSession.playersChosen.length < 2) {
       // Select two random unique players
-      const unchosenPlayers = players.filter(player => !allChosenPlayers.has(player.toString()));
+      const unchosenPlayers = players.filter(player => !allChosenPlayers.has(player._id.toString()));
       if (unchosenPlayers.length < 2) {
         throw new Error('Not enough unchosen players to start the first round.');
       }
@@ -313,17 +314,18 @@ const choosePlayers = async (roomCode, questionId) => {
       const [player1, player2] = chooseTwoRandomPlayers(unchosenPlayers);
 
       // player chosen are the players currently being voted on
-      votingSession.playersChosen = [player1, player2];
-      votingSession.allChosenPlayers.push(player1, player2);
+      votingSession.playersChosen = [player1._id, player2._id];
+      votingSession.allChosenPlayers.push(player1._id, player2._id);
       await votingSession.save();
 
-      return { player1, player2 };
+      return { player1: player1.username, player2: player2.username };
     }
 
     // this will be 0 or 1 depending on votes
-    const chosenWinner = getCurrentWinner(votingSession._id);
-    const currentWinner = votingSession.playersChosen[chosenWinner];
-    const remainingPlayers = players.filter(player => !allChosenPlayers.has(player.toString()));
+    const chosenWinnerIndex = await getCurrentWinner(roomCode, questionId);
+    const currentWinnerId = votingSession.playersChosen[chosenWinnerIndex];
+    const currentWinner = players.find(player => player._id.toString() === currentWinnerId.toString());
+    const remainingPlayers = players.filter(player => !allChosenPlayers.has(player._id.toString()));
 
     if (remainingPlayers.length === 0) {
       throw new Error('No more players to replace the loser.');
@@ -331,14 +333,14 @@ const choosePlayers = async (roomCode, questionId) => {
 
     const newPlayer = chooseOneRandomPlayer(remainingPlayers);
 
-    votingSession.playersChosen = [currentWinner, newPlayer];
-    votingSession.allChosenPlayers.push(newPlayer);
+    votingSession.playersChosen = [currentWinner._id, newPlayer._id];
+    votingSession.allChosenPlayers.push(newPlayer._id);
     // reset the voting responses
     votingSession.votingResponse = [];
 
     await votingSession.save();
 
-    return { player1: currentWinner, player2: newPlayer };
+    return { player1: currentWinner.username, player2: newPlayer.username };
   } catch (error) {
     console.error('Error in choosePlayers:', error.message);
     throw error;

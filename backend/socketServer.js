@@ -121,8 +121,7 @@ function initializeSocketServer(server) {
         console.log('Players chosen:', players);
 
         // return the boys
-        // in the format { player1: <user_object>, player2: <user_object>}
-        // to get just the usernames do response.player1.username from the callback.
+        // {player1: username, player2: username}
         callback(null, players);
       } catch (error) {
         console.error(error);
