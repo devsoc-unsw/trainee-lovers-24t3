@@ -83,13 +83,13 @@ function initializeSocketServer(server) {
       }
     });
 
-    socket.on('check-room-exist', (roomCode, callback) => {
-      if (!rooms[roomCode]) {
-        callback({ error: `Room ${roomCode} does not exist.` });
-      } else {
-        callback(userMap(roomCode));
-      }
-    });
+    // socket.on('check-room-exist', (roomCode, callback) => {
+    //   if (!rooms[roomCode]) {
+    //     callback({ error: `Room ${roomCode} does not exist.` });
+    //   } else {
+    //     callback(userMap(roomCode));
+    //   }
+    // });
 
     socket.on('leave-room', (roomCode, userId) => {
       console.log('leave room is called')  
