@@ -10,12 +10,6 @@ import { useSocket } from '@/context/socketContext';
 const Page = () => {
   // To be deleted 
   const socket = useSocket();
-  // const questionArray = [
-  //   'Your WAM', 
-  //   'Body count?',
-  //   'How many exes?',
-  //   'Kiss count?'
-  // ]
 
   // an array of questions
   // question has fields: qId, questionStr
@@ -31,20 +25,25 @@ const Page = () => {
   const [answers, setAnswers] = useState({});
 
   const handleSubmitAnswer = () => {
-      // send question responses to frontend
-      // convert answers to an array of questionAnswer objects, each with fields: qId, answer
-      // send to backend
+    // send question responses to frontend
+    // convert answers to an array of questionAnswer objects, each with fields: qId, answer
+    // send to backend
 
-      const questionAnswers = [];
-      // for each question in questionArray, add an object to answers array
-      // each questionAnswer should have fields: "qid", "response"
-      questionArray.forEach(question => {
-        const qid = question._id;
-        const answer = answers[qid];
-        questionAnswers.push({qid: qid, response: answer});
-      });
+    const questionAnswers = [];
+    // for each question in questionArray, add an object to answers array
+    // each questionAnswer should have fields: "qid", "response"
+    questionArray.forEach(question => {
+      const qid = question._id;
+      const answer = answers[qid];
+      questionAnswers.push({qid: qid, response: answer});
+      console.log(`Question ${qid} has answer: ${answer}`);
+    });
 
-      socket.emit('save-question', questionAnswers, userId, roomCode)
+    try {
+      socket.emit('save-question', questionAnswers, userId, roomCode);
+    } catch (error) {
+      console.error("Error emitting save-question event:", error);
+    }  
   }
 
   return (
