@@ -1,23 +1,50 @@
-'use client'
+'use client';
 
 import { useRouter } from 'next/navigation';
 import useAuthStore from '../store/useAuthStore';
+import { useSocket } from '../context/socketContext';
+import { useEffect } from 'react';
 
 export default function PrimaryButton({ name, action }) {
+  const socket = useSocket();
   const router = useRouter();
-  const { isHost ,setIsHost , setShowEnterNameModal, setShowSelectQuestionsModal, 
-    setShowGameIdModal, setShowStartGameModal } = useAuthStore();
+  const {
+    isHost,
+    username,
+    setIsHost,
+    setShowEnterNameModal,
+    setShowSelectQuestionsModal,
+    setShowGameIdModal,
+    setShowStartGameModal,
+  } = useAuthStore();
+
+  useEffect(() => {
+    console.log('PrimaryButton mounted with:', name, action);
+  }, [name, action]);
+
+  const handleSocketResponse = (response) => {
+    if (response.error) {
+      console.error('Socket error:', response.error);
+    } else {
+      console.log('Socket response:', response);
+    }
+  };
 
   const handleRedirect = () => {
-    // If is a host then function
     if (action === 'createRoom') {
       setIsHost(true);
       setShowEnterNameModal(true);
     } else if (action === 'submitUsername') {
       if (isHost) {
         setShowSelectQuestionsModal(true);
+        const roomCode = 'ROOM123';
+        const uid = 'USER123';
+        socket.emit('create-room', username, uid, roomCode);
       } else {
         setShowGameIdModal(true);
+        const roomCode = 'ROOM123';
+        const uid = 'USER123';
+        socket.emit('join-room', roomCode, username, uid, handleSocketResponse);
       }
       setShowEnterNameModal(false);
     } else if (action === 'startGame') {
@@ -30,16 +57,18 @@ export default function PrimaryButton({ name, action }) {
       setShowSelectQuestionsModal(false);
       setShowStartGameModal(true);
     } else if (action === 'answerQuestions') {
-      router.push('/voting')
+      router.push('/voting');
+    } else {
+      console.error('Invalid action provided:', action);
     }
-  }
+  };
 
   return (
     <div
-      className='flex items-center justify-center w-8/12 h-16 py-2 text-3xl lg:text-5xl text-white bg-mid-blue font-mouse rounded-md z-10 cursor-pointer hover:border'
-      onClick={() => handleRedirect()}
+      className="flex items-center justify-center w-8/12 h-16 py-2 text-3xl lg:text-5xl text-white bg-mid-blue font-mouse rounded-md z-10 cursor-pointer hover:border"
+      onClick={handleRedirect}
     >
       {name}
     </div>
   );
-};
+}
