@@ -79,7 +79,7 @@ const findGame = async (roomCode) => {
   }
 }
 
-const joinGame = async (roomCode, username) => {
+const joinGame = async (roomCode, username, callback) => {
   try {
     const game = await findGame(roomCode);
     if (!game) {

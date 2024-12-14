@@ -44,9 +44,9 @@ function initializeSocketServer(server) {
       }
     });
 
-    socket.on("join-room", (roomCode, username, callback) => {
+    socket.on("join-room", async (roomCode, username, callback) => {
       try {
-        joinGame(roomCode, username, (err, result) => {
+        joinGame(roomCode, username, async (err, result) => {
           if (err) {
             console.error("Error joining room: ", err);
             return callback({ error: err });
@@ -54,11 +54,17 @@ function initializeSocketServer(server) {
 
           socket.join(roomCode);
 
-          // will send back the userId & roomcode to the client
-          callback(null, result);
+          try {
+            const users = await userMap(roomCode);
+            ioInstance.to(roomCode).emit("update-room", users);
 
-          ioInstance.to(roomCode).emit("update-room", userMap(roomCode));
-          console.log(`${username} joined room:`, roomCode);
+            console.log(`${username} joined room:`, roomCode);
+
+            callback(null, result);
+          } catch (err) {
+            callback({ error: "error while fetching users "})
+          }
+
         });
       } catch (error) {
         console.error(error);
