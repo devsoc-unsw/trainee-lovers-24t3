@@ -1,6 +1,8 @@
 let ioInstance;
 
 const createGame = require('./dbFunctions').createGame;
+const joinGame = require('./dbFunctions').joinGame;
+const userMap = require('./dbFunctions').userMap;
 
 function initializeSocketServer(server) {
 
@@ -35,48 +37,30 @@ function initializeSocketServer(server) {
         });
       } catch (error) {
         console.error(error);
-        callback({ error: err });
+        callback({ error: "error creating room" });
       }
     });
 
-    socket.on('join-room', (roomCode, username, uid, callback) => {
-        if (!rooms[roomCode]) {
-          // If the room doesn't exist, send an error message to the client
-          callback({ error: `Room ${roomCode} does not exist.` });
-          return;
-        }
-    
-        // Check if the user already exists in the room
-        const existingUser = rooms[roomCode].users.find(room => room.uid === uid);
-        if (!existingUser) {
-          rooms[roomCode].users.push({
-            socket: socket.id,
-            username: username,
-            uid: uid,
-            readyStatus: false,
-            roundLoaded: false
-          });
-        } else {
-          console.log("update socket id for user ", username, " to ", socket.id);
-          existingUser.socket = socket.id;
-        }
-    
-        socket.join(roomCode);
-    
-        const usersInRoom = userMap(roomCode);
+    socket.on('join-room', (roomCode, username, callback) => {
+      try {
+        joinGame(roomCode, username, (err, result) => {
+          if (err) {
+            console.error("Error joining room: ", err);
+            return callback({error: err});
+          }
 
-        console.log('users in room ', usersInRoom)
-    
-        // update callback function with the list of users
-        callback(usersInRoom);
-    
-        // alert users that u joined room
-        ioInstance.to(roomCode).emit('update-room', usersInRoom);
-    });
+          socket.join(roomCode);
 
-    socket.on('update-ready', (roomCode, userId) => {
-      console.log('updated ready for userId: ', userId)  
-      updateReady(roomCode, userId);
+          // will send back the userId & roomcode to the client
+          callback(null, result);
+
+          ioInstance.to(roomCode).emit('update-room', userMap(roomCode));
+          console.log(`${username} joined room:`, roomCode);
+        });
+      } catch (error) {
+        console.error(error);
+        callback({error: "error joining room"});
+      }
     });
 
     socket.on('disconnect', () => {
@@ -132,28 +116,6 @@ function initializeSocketServer(server) {
                 console.log(`Room ${roomCode} deleted as it is now empty.`);
             }
         }
-    });
-
-    socket.on('update-time', (roomCode, time) => {
-      if (time == "2 min") {
-        time = 120;
-      } else if (time == "4 min") {
-        time = 240;
-      } else if (time == "6 min") {
-        time = 360;
-      } else if (time == "8 min") {
-        time = 480;
-      } else {
-        return;
-      }
-
-      console.log('time is', time);
-
-      if (rooms[roomCode]) {
-        rooms[roomCode].defaultTime = time;
-        rooms[roomCode].timer = time;
-        console.log('default time is now', rooms[roomCode].defaultTime);
-      }
     });
 
     socket.on('player-loaded-round', (roomCode, userId) => {
@@ -318,15 +280,6 @@ function updateReady(roomCode, userId) {
   user.readyStatus = !user.readyStatus;
   console.log('update ready for userID: ', userId)
   ioInstance.to(roomCode).emit('update-room', userMap(roomCode));
-}
-
-const userMap = (roomCode) => {
-   return rooms[roomCode].users.map(user => ({
-    username: user.username,
-    isHost: user.uid === rooms[roomCode].host,
-    readyStatus: user.readyStatus,
-    roundLoaded: user.roundLoaded
-  }));
 }
 
 module.exports = { initializeSocketServer };

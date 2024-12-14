@@ -79,17 +79,17 @@ const findGame = async (roomCode) => {
   }
 }
 
-const joinGame = async (roomCode, username) => {
+const joinGame = async (roomCode, username, callback) => {
   try {
     const game = await findGame(roomCode);
     if (!game) {
-      throw new Error(`Game not found with roomCode: ${roomCode}`);
+      return callback(new Error(`Game not found with roomCode: ${roomCode}`), null);
     } 
 
     const newUser = new GameUser({
       roomCode: roomCode,
       username: username
-    })
+    });
 
     await newUser.save();
 
@@ -97,10 +97,14 @@ const joinGame = async (roomCode, username) => {
     game.users.push(newUser._id);
     await game.save();
 
-    return game;
+    return callback(null, {
+      userId: newUser._id,
+      roomCode: roomCode
+    });
+    
   } catch (err) {
     console.error(err.message);
-    return null;
+    return callback(err, null);
   }
 }
 
@@ -191,6 +195,27 @@ const storeAnswer = async (qid, playerId, response, roomCode) => {
     
   } catch (err) {
     console.error(err.message);
+  }
+}
+
+const userMap = async (roomCode) => {
+  try {
+    const game = await findGame(roomCode);
+    if (!game) {
+      throw new Error(`Game not found for roomCode: ${roomCode}`);
+    }
+
+    await game.populate('users');
+    // might need to return more 
+    return game.users.map((user) => ({
+      username: user.username,
+      points: user.points,
+      isActive: user.isActive,
+      isHost: user.isHost,
+    }));
+  } catch (error) {
+    console.error(`Error in userMap: ${error.message}`);
+    throw error; 
   }
 }
 
@@ -299,4 +324,5 @@ module.exports = {
   chooseRandomPlayer,
   getCurrentWinner,
   getNextQuestion,
+  userMap,
 };
