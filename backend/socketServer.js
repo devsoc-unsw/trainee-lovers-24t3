@@ -94,7 +94,6 @@ function initializeSocketServer(server) {
       }
     });
 
-
     socket.on('start-game', async (roomCode, callback) => {
       try {
         const questions = await getQuestions(roomCode);
