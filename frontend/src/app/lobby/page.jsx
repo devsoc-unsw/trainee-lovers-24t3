@@ -5,8 +5,11 @@ import DecorativeShapesBackground from '@/components/DecorativeShapesBackground'
 import PrimaryButton from '@/components/PrimaryButton';
 import GameIdBox from '@/components/GameIdBox';
 import QrCodeBox from '@/components/QrCodeBox';
+import useAuthStore from '@/store/useAuthStore';
 
 const Page = () => {
+  const { roomCode, userId } = useAuthStore();
+
   return (
     <div className='flex flex-col w-full h-screen bg-white items-center justify-center'>
       <DecorativeShapesBackground />
@@ -24,6 +27,7 @@ const Page = () => {
           </div>
         </div>
         <div className='flex w-full sm:w-3/4 md:w-1/3 justify-center items-center'>
+          <div className='text-3xl text-black'>{`${roomCode}, ${userId}`}</div>
           <PrimaryButton name='START GAME' action='startGame'/>
         </div>
       </div>

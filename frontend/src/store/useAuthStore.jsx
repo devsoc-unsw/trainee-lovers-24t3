@@ -4,7 +4,7 @@ const useAuthStore = create((set, get) => ({
   isHost: false,
   username: "",
   roomCode: '',
-    userId: "",
+  userId: "",
   questionsSelected: [],
   showEnterNameModal: false,
   showGameIdModal: false,
@@ -17,9 +17,8 @@ const useAuthStore = create((set, get) => ({
   setShowEnterNameModal: (showModal) => set({ showEnterNameModal: showModal }),
   setShowGameIdModal: (showModal) => set({ showGameIdModal: showModal }),
   setShowStartGameModal: (showModal) => set({ showStartGameModal: showModal }),
-  setShowSelectQuestionsModal: (showModal) =>
-    set({ showSelectQuestionsModal: showModal }),
-    setUserId: (id) => ({ userId: id }),
+  setShowSelectQuestionsModal: (showModal) => set({ showSelectQuestionsModal: showModal }),
+  setUserId: (id) => set({ userId: id }),
 }));
 
 export default useAuthStore;
