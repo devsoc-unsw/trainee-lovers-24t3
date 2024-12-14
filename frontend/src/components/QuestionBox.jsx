@@ -1,13 +1,7 @@
-<<<<<<< HEAD
-
-export default function QuestionBox({ question }) {
-=======
 import React from "react";
-
 
 // question has fields: id, questionContent
 export default function QuestionBox({ question, setAnswers }) {
->>>>>>> f4b5332ca5360c7d425efc9692d58b4bf2652060
   return (
     <div className="bg-[#A1CDF7] w-[350px] h-[120px] rounded-[30px] content-center text-center shadow-md shadow-[#01136F] p-2 font-mouse">
       <div className="text-3xl text-[#01136F]">

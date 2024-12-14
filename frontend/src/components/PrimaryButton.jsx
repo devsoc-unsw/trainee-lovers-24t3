@@ -48,27 +48,23 @@ export default function PrimaryButton({ name, action, handleAction }) {
   }
 
   const createRoom = () => {
-    socket.emit('create-room', username, handleSocketResponse);
-    socket.on('update-room', handleUpdateRoom)
+    return new Promise((resolve, reject) => {
+      socket.emit('create-room', username, (error, response) => {
+        console.log("Create Room Response:", response);
+        if (response && !error) {
+          resolve(response);
+        } else {
+          reject(error || "Failed to create room");
+        }
+      });
+    });
+    // socket.on('update-room', handleUpdateRoom)
   }
 
   const joinRoom = () => {
     socket.emit('join-room', roomCode, username, handleSocketResponse);
     socket.on('update-room', handleUpdateRoom)
   }
-
-  //   return new Promise((resolve, reject) => {
-  //     socket.emit('create-room', username, (error, response) => {
-  //       console.log("Create Room Response:", response);
-  //       if (response && !error) {
-  //         resolve(response);
-  //       } else {
-  //         reject(error || "Failed to create room");
-  //       }
-  //     });
-  //   });
-  // };
-
 
   const handleAddQuestionSocketResponse = (error, response) => {
     if (error) {
