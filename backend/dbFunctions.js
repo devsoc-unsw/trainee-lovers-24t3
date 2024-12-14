@@ -192,7 +192,6 @@ const storeAnswer = async (qid, playerId, response, roomCode) => {
 
     console.log("Player response saved:", newResponse);
     console.log("questionresponses.length = ", question.questionResponses.length, "game.users.length = ", game.users.length);
-
     
     // calculate the winner for this question
     if (question.questionResponses.length === game.users.length) {
@@ -214,10 +213,16 @@ const storeAnswer = async (qid, playerId, response, roomCode) => {
       await question.save();
 
       console.log(`Winner for question ${qid}: ${winnerId}`);
+
+      // also return true to say everyone submitted
+      return true;
     }
+
+    return false;
     
   } catch (err) {
     console.error(err.message);
+    return false;
   }
 }
 
