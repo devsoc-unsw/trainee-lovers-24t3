@@ -53,27 +53,6 @@ export default function PrimaryButton({ name, action, handleAction }) {
     });
   };
 
-  // const createRoom = async () => {
-  //   try {
-  //     socket.emit('create-room', username, handleSocketResponse);
-  //   } catch (error) {
-  //     console.error("Error creating room:", error);
-  //   }
-
-  // }
-
-  const joinRoom = () => {
-    return new Promise((resolve, reject) => {
-      socket.emit('join-room', roomCode, username, (error, response) => {
-        if (response && !error) {
-          resolve(response); // Room join succeeded, resolve with response
-        } else {
-          reject(error || "Failed to join room"); // Handle error
-        }
-      });
-    });
-  };
-
   const handleAddQuestionSocketResponse = (error, response) => {
     if (error) {
       console.error("Error adding question:", error.message);
@@ -85,9 +64,12 @@ export default function PrimaryButton({ name, action, handleAction }) {
   const handleRedirect = async () => {
     try {
       if (action === "createRoom") {
+
         setIsHost(true);
         setShowEnterNameModal(true);
+
       } else if (action === "submitUsername") {
+
         setShowEnterNameModal(false);
         if (isHost) {
           setShowSelectQuestionsModal(true);
@@ -97,13 +79,6 @@ export default function PrimaryButton({ name, action, handleAction }) {
 
       } else if (action === "startGame") {
 
-        router.push("/question");
-
-      } else if (action === "enterGameId") {
-
-        const roomResponse = await joinRoom();
-        setRoomCode(roomResponse.roomCode);
-        setUserId(roomResponse.userId);
         router.push("/question");
 
       } else if (action === "selectQuestions") {
@@ -122,8 +97,8 @@ export default function PrimaryButton({ name, action, handleAction }) {
           questionsSelected,
           handleAddQuestionSocketResponse
         );
-
         router.push("/lobby");
+        
       } else if (action === "answerQuestions") {
         router.push("/voting");
       } else {
@@ -137,7 +112,7 @@ export default function PrimaryButton({ name, action, handleAction }) {
   return (
     <div
       className="flex items-center justify-center w-8/12 h-16 py-2 text-3xl lg:text-5xl text-white bg-mid-blue font-mouse rounded-md z-10 cursor-pointer hover:border"
-      onClick={action === "submitAnswers" ? handleAction : () => handleRedirect()}
+      onClick={action === "submitAnswers" || action === "enterGameId" ? handleAction : () => handleRedirect()}
     >
       {name}
     </div>
