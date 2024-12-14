@@ -36,20 +36,23 @@ export default function PrimaryButton({ name, action }) {
     }
   };
 
+  const joinOrCreateRoom = () => {
+    if (isHost) {
+      setShowSelectQuestionsModal(true);
+      socket.emit('create-room', username, handleSocketResponse);
+
+    } else {
+      setShowGameIdModal(true);
+      socket.emit('join-room', roomCode, username, userId, handleSocketResponse);
+    }
+  };
+
   const handleRedirect = () => {
     if (action === 'createRoom') {
       setIsHost(true);
       setShowEnterNameModal(true);
     } else if (action === 'submitUsername') {
-      if (isHost) {
-        setShowSelectQuestionsModal(true);
-        socket.emit('create-room', username, handleSocketResponse);
 
-      } else {
-        setShowGameIdModal(true);
-        socket.emit('join-room', roomCode, username, userId, handleSocketResponse);
-
-      }
       setShowEnterNameModal(false);
     } else if (action === 'startGame') {
       router.push('/question');
@@ -57,6 +60,7 @@ export default function PrimaryButton({ name, action }) {
       setShowGameIdModal(false);
       router.push('/lobby');
     } else if (action === 'selectQuestions') {
+      joinOrCreateRoom();
       setShowSelectQuestionsModal(false);
       router.push('/lobby');
     } else if (action === 'answerQuestions') {

@@ -62,6 +62,18 @@ function initializeSocketServer(server) {
         callback({error: "error joining room"});
       }
     });
+
+    // receieve question answer from frontend
+    socket.on('send-answer', async (roomCode, playerid, qid, answer) => {
+      try {
+        storeAnswer(playerid, qid, answer, roomCode);
+        console.log(`Answer stored for player ${playerid}: ${answer}`);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+
   });
   console.log('Socket.IO server initialized');
   return ioInstance;
