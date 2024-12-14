@@ -4,7 +4,6 @@ import PrimaryButton from '@/components/PrimaryButton';
 import SecondaryButton from '@/components/SecondaryButton';
 
 const EnterNameModal = () => {
-  const router = useRouter();
   const { username, setUsername, isHost, setShowEnterNameModal, setShowGameIdModal, setShowSelectQuestionsModal } = useAuthStore();
   
   const handleKeyDown = (event) => {
