@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import useAuthStore from '../store/useAuthStore';
-import { useSocket } from '../context/socketContext';
-import { useEffect } from 'react';
+import { useRouter } from "next/navigation";
+import useAuthStore from "../store/useAuthStore";
+import { useSocket } from "../context/socketContext";
+import { useEffect } from "react";
 
 export default function PrimaryButton({ name, action }) {
   const socket = useSocket();
@@ -11,62 +11,79 @@ export default function PrimaryButton({ name, action }) {
   const {
     isHost,
     username,
+    questionsSelected,
     setIsHost,
     setShowEnterNameModal,
     setShowSelectQuestionsModal,
     setShowGameIdModal,
-    setShowStartGameModal,
     setRoomCode,
     setUserId,
-    roomCode, 
-    userId
+    roomCode,
   } = useAuthStore();
 
   useEffect(() => {
-    console.log('PrimaryButton mounted with:', name, action);
+    console.log("PrimaryButton mounted with:", name, action);
   }, [name, action]);
 
   const handleSocketResponse = (error, response) => {
     if (error) {
-        console.error("Error creating room:", error.message);
+      console.error("Error creating room:", error.message);
+      return;
+    } else if (isHost) {
+      console.log("Room created successfully:", response);
     } else {
-        console.log("Room created successfully:", response);
-        setRoomCode(response.roomCode);
-        setUserId(response.userId);
+      console.log("joined successfully:", response);
+      setShowGameIdModal(false);
+      router.push('/lobby');
     }
+    setRoomCode(response.roomCode);
+    setUserId(response.userId);
   };
 
-  const joinOrCreateRoom = () => {
-    if (isHost) {
-      setShowSelectQuestionsModal(true);
-      socket.emit('create-room', username, handleSocketResponse);
+  const createRoom = () => {
+    socket.emit('create-room', username, handleSocketResponse);
+  }
 
+  const joinRoom = () => {
+    socket.emit('join-room', roomCode, username, handleSocketResponse);
+  }
+
+  const handleAddQuestionSocketResponse = (error, response) => {
+    if (error) {
+      console.error("Error adding question:", error.message);
     } else {
-      setShowGameIdModal(true);
-      socket.emit('join-room', roomCode, username, userId, handleSocketResponse);
+      console.log("Question added successfully:", response);
     }
   };
 
   const handleRedirect = () => {
-    if (action === 'createRoom') {
+    if (action === "createRoom") {
       setIsHost(true);
       setShowEnterNameModal(true);
     } else if (action === 'submitUsername') {
-
       setShowEnterNameModal(false);
+      if (isHost) {
+        setShowSelectQuestionsModal(true);
+      } else {
+        setShowGameIdModal(true);
+      }
     } else if (action === 'startGame') {
       router.push('/question');
     } else if (action === 'enterGameId') {
-      setShowGameIdModal(false);
-      router.push('/lobby');
+      joinRoom();
     } else if (action === 'selectQuestions') {
-      joinOrCreateRoom();
-      setShowSelectQuestionsModal(false);
-      router.push('/lobby');
-    } else if (action === 'answerQuestions') {
-      router.push('/voting');
+      createRoom();
+      socket.emit(
+        "add-question",
+        roomCode,
+        questionsSelected,
+        handleAddQuestionSocketResponse
+      );
+      router.push("/lobby");
+    } else if (action === "answerQuestions") {
+      router.push("/voting");
     } else {
-      console.error('Invalid action provided:', action);
+      console.error("Invalid action provided:", action);
     }
   };
 
