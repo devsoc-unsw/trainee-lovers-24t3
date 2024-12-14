@@ -2,12 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import useAuthStore from "../store/useAuthStore";
+import usePlayersStore from "@/store/usePlayersStore";
 import { useSocket } from "../context/socketContext";
 import { useEffect } from "react";
 
 export default function PrimaryButton({ name, action, handleAction }) {
   const socket = useSocket();
   const router = useRouter();
+
   const {
     isHost,
     username,
@@ -20,6 +22,7 @@ export default function PrimaryButton({ name, action, handleAction }) {
     setUserId,
     roomCode,
   } = useAuthStore();
+  const { handleUpdateRoom } = usePlayersStore();
 
   useEffect(() => {
     console.log("PrimaryButton mounted with:", name, action);
@@ -51,7 +54,7 @@ export default function PrimaryButton({ name, action, handleAction }) {
         }
       });
     });
-  };
+  }
 
   const handleAddQuestionSocketResponse = (error, response) => {
     if (error) {
@@ -84,7 +87,12 @@ export default function PrimaryButton({ name, action, handleAction }) {
       } else if (action === "selectQuestions") {
 
         const roomResponse = await createRoom(); // Wait for room creation to complete
-        
+
+        socket.on('update-room', async (users) => {
+          console.log("Users updated:", users);
+          handleUpdateRoom(users);
+        });
+
         console.log("Room created:", roomResponse);
         setRoomCode(roomResponse.roomCode);
         setUserId(roomResponse.userId);
@@ -97,6 +105,7 @@ export default function PrimaryButton({ name, action, handleAction }) {
           questionsSelected,
           handleAddQuestionSocketResponse
         );
+
         router.push("/lobby");
         
       } else if (action === "answerQuestions") {

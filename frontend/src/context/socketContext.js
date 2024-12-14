@@ -28,10 +28,10 @@ export const SocketProvider = ({ children }) => {
         setIsSocketReady(true);
       });
 
-      socket.current.on('disconnect', () => {
-        console.log('Disconnected from socket');
-        setIsSocketReady(false);
-      });
+      // socket.current.on('disconnect', () => {
+      //   console.log('Disconnected from socket');
+      //   setIsSocketReady(false);
+      // });
     }
 
     return () => {

@@ -1,6 +1,5 @@
 import React from "react";
 
-
 // question has fields: id, questionContent
 export default function QuestionBox({ question, setAnswers }) {
   return (
