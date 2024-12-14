@@ -79,11 +79,11 @@ const findGame = async (roomCode) => {
   }
 }
 
-const joinGame = async (roomCode, username, callback) => {
+const joinGame = async (roomCode, username) => {
   try {
     const game = await findGame(roomCode);
     if (!game) {
-      return callback(new Error(`Game not found with roomCode: ${roomCode}`), null);
+      throw new Error(`Game not found with roomCode: ${roomCode}`);
     } 
 
     const newUser = new GameUser({
