@@ -192,7 +192,6 @@ const storeAnswer = async (qid, playerId, response, roomCode) => {
 
     console.log("Player response saved:", newResponse);
     console.log("questionresponses.length = ", question.questionResponses.length, "game.users.length = ", game.users.length);
-
     
     // calculate the winner for this question
     if (question.questionResponses.length === game.users.length) {
@@ -214,10 +213,16 @@ const storeAnswer = async (qid, playerId, response, roomCode) => {
       await question.save();
 
       console.log(`Winner for question ${qid}: ${winnerId}`);
+
+      // also return true to say everyone submitted
+      return true;
     }
+
+    return false;
     
   } catch (err) {
     console.error(err.message);
+    return false;
   }
 }
 
@@ -240,12 +245,30 @@ const votePlayer = async (roomCode, questionId, playerId, response) => {
       console.log('VotingSession Updated:', updateVotes);
     } else {
       console.log(`VotingSession not found for given roomCode ${roomCode} and questionId ${questionId}`);
+      return false;
     }
 
+    const game = await GameSession.findOne({ roomCode });
+    if (!game) {
+      console.error(`Game not found with roomCode: ${roomCode}`);
+      return false;
+    }
+
+    const totalPlayers = game.users.length;
+
+    if (updateVotes.votingResponse.length === totalPlayers) {
+      console.log('All players have voted');
+      return true;
+    } else {
+      console.log('Not all players have voted');
+      return false;
+    }
   } catch (err) {
     console.error(err.message);
   }
 }
+
+// once all voted return 
 
 // pass in previous player ids so we don't choose the same players
 const chooseRandomPlayer = async (prevPlayerIds, roomCode, questionId) => {
