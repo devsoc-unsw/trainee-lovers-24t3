@@ -1,3 +1,5 @@
+'use client';
+
 import NameTag from '../../components/NameTag';
 import DecorativeShapesBackground from '@/components/DecorativeShapesBackground';
 import PrimaryButton from '@/components/PrimaryButton';

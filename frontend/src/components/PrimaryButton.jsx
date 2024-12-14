@@ -16,6 +16,10 @@ export default function PrimaryButton({ name, action }) {
     setShowSelectQuestionsModal,
     setShowGameIdModal,
     setShowStartGameModal,
+    setRoomCode,
+    setUserId,
+    roomCode, 
+    userId
   } = useAuthStore();
 
   useEffect(() => {
@@ -27,8 +31,8 @@ export default function PrimaryButton({ name, action }) {
         console.error("Error creating room:", error.message);
     } else {
         console.log("Room created successfully:", response);
-        console.log("Room Code:", response.roomCode);
-        console.log("User ID:", response.userId);
+        setRoomCode(response.roomCode);
+        setUserId(response.userId);
     }
   };
 
@@ -43,19 +47,18 @@ export default function PrimaryButton({ name, action }) {
 
       } else {
         setShowGameIdModal(true);
-        socket.emit('join-room', roomCode, username, uid, handleSocketResponse);
-        
+        socket.emit('join-room', roomCode, username, userId, handleSocketResponse);
+
       }
       setShowEnterNameModal(false);
     } else if (action === 'startGame') {
-      setShowStartGameModal(false);
-      router.push('/lobby');
+      router.push('/question');
     } else if (action === 'enterGameId') {
       setShowGameIdModal(false);
       router.push('/lobby');
     } else if (action === 'selectQuestions') {
       setShowSelectQuestionsModal(false);
-      setShowStartGameModal(true);
+      router.push('/lobby');
     } else if (action === 'answerQuestions') {
       router.push('/voting');
     } else {

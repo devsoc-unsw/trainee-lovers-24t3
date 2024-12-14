@@ -131,10 +131,11 @@ const userMap = async (roomCode) => {
 
 
 // need to correspond each response to this quesiton
-const addQuestion = async (questionContent, roomCode) => {
+const addQuestion = async (questionContent, keyword, roomCode) => {
   try {
     const newQuestion = new Question({
       questionContent: questionContent,
+      keyword: keyword,
       questionResponses: [],
       winner: null,
     });
