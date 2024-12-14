@@ -1,6 +1,8 @@
 let ioInstance;
 
 const createGame = require('./dbFunctions').createGame;
+const joinGame = require('./dbFunctions').joinGame;
+const userMap = require('./dbFunctions').userMap;
 
 function initializeSocketServer(server) {
 
@@ -39,29 +41,20 @@ function initializeSocketServer(server) {
       }
     });
 
-    socket.on('join-room', (roomCode, username, uid, callback) => {
-        if (!rooms[roomCode]) {
-          // If the room doesn't exist, send an error message to the client
-          callback({ error: `Room ${roomCode} does not exist.` });
-          return;
-        }
-    
-        // Check if the user already exists in the room
-        const existingUser = rooms[roomCode].users.find(room => room.uid === uid);
-        if (!existingUser) {
-          rooms[roomCode].users.push({
-            socket: socket.id,
-            username: username,
-            uid: uid,
-            readyStatus: false,
-            roundLoaded: false
-          });
-        } else {
-          console.log("update socket id for user ", username, " to ", socket.id);
-          existingUser.socket = socket.id;
-        }
-    
-        socket.join(roomCode);
+    socket.on('join-room', (roomCode, username, callback) => {
+      try {
+        joinGame(roomCode, username, (err, result) => {
+          if (err) {
+            console.error("Error joining room: ", err);
+            return callback({error: err.message});
+          }
+
+          socket.join(roomCode);
+          callback(null, result);
+        
+        });
+      } catch (error) {
+
     
         const usersInRoom = userMap(roomCode);
 
@@ -72,6 +65,7 @@ function initializeSocketServer(server) {
     
         // alert users that u joined room
         ioInstance.to(roomCode).emit('update-room', usersInRoom);
+      }
     });
 
     socket.on('update-ready', (roomCode, userId) => {
@@ -318,15 +312,6 @@ function updateReady(roomCode, userId) {
   user.readyStatus = !user.readyStatus;
   console.log('update ready for userID: ', userId)
   ioInstance.to(roomCode).emit('update-room', userMap(roomCode));
-}
-
-const userMap = (roomCode) => {
-   return rooms[roomCode].users.map(user => ({
-    username: user.username,
-    isHost: user.uid === rooms[roomCode].host,
-    readyStatus: user.readyStatus,
-    roundLoaded: user.roundLoaded
-  }));
 }
 
 module.exports = { initializeSocketServer };
