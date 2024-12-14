@@ -16,10 +16,10 @@ const Page = () => {
   const { userId, roomCode } = useAuthStore();
 
   const questionArray = [
-    {_id: 1, questionContent: 'Your WAM'},
-    {_id: 2, questionContent: 'Body count?'},
-    {_id: 3, questionContent: 'How many exes?'},
-    {_id: 4, questionContent: 'Kiss count?'}
+    {_id: "675d78f20612758cf507e8af", questionContent: 'Your WAM'},
+    {_id: "675d78f20612758cf507e8ad", questionContent: 'Body count?'},
+    {_id: "675d79207a6bff092b04aa36", questionContent: 'How many exes?'},
+    {_id: "675d79207a6bff092b04aa39", questionContent: 'Kiss count?'}
   ]
 
   const [answers, setAnswers] = useState({});
@@ -40,7 +40,7 @@ const Page = () => {
     });
 
     try {
-      socket.emit('save-question', questionAnswers, userId, roomCode);
+      socket.emit('save-question', roomCode, questionAnswers, userId);
     } catch (error) {
       console.error("Error emitting save-question event:", error);
     }  
