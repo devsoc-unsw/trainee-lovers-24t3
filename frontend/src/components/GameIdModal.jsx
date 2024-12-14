@@ -16,7 +16,7 @@ const GameIdModal = () => {
     } else {
       setRoomCode(response.roomCode);
       setUserId(response.userId);
-      router.push('/question');
+      router.push('/lobby');
       setShowGameIdModal(false);
     }
   }
