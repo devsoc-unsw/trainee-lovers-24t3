@@ -3,6 +3,9 @@ let ioInstance;
 const createGame = require('./dbFunctions').createGame;
 const joinGame = require('./dbFunctions').joinGame;
 const userMap = require('./dbFunctions').userMap;
+const addQuestion = require('./dbFunctions').addQuestion;
+const storeAnswer = require('./dbFunctions').storeAnswer;
+const getQuestions = require('./dbFunctions').getQuestions;
 
 function initializeSocketServer(server) {
 
@@ -21,7 +24,7 @@ function initializeSocketServer(server) {
 
     socket.on('create-room', async (username, callback) => {
       try {
-        createGame(username, (err, result) => {
+        createGame(username, async (err, result) => {
           if (err) {
             console.error("Error creating room: ", err);
             // send a callback to the client with the error message
@@ -29,7 +32,8 @@ function initializeSocketServer(server) {
           } else {
             const roomCode = result.roomCode;
             socket.join(result.roomCode);
-            ioInstance.to(roomCode).emit('update-room', userMap(roomCode));
+            const users = await userMap(roomCode);
+            ioInstance.to(roomCode).emit('update-room', users);
 
             console.log(`${username} created room:`, result.roomCode);
             callback(null, result);
@@ -62,7 +66,44 @@ function initializeSocketServer(server) {
         callback({error: "error joining room"});
       }
     });
+
+    socket.on('add-question', async (roomCode, questionsSelected, callback) => {
+      try {
+        for (const question of questionsSelected) {
+          await addQuestion(question.question, question.keyword, roomCode);
+        }
+      } catch (error) {
+          console.error(error);
+          callback({error: "error adding question"});
+      }
+    });
+
+    socket.on('save-question', async (roomCode, questionsAnswered, userId) => {
+      try {
+        for (const question of questionsAnswered) {
+          await storeAnswer(question.qid, userId, question.response, roomCode);
+        }
+
+        console.log("All questions saved");
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+    socket.on('display-questions', async (roomCode) => {
+      try {
+        const questions = await getQuestions(roomCode);
+        if (questions) {
+          ioInstance.to(roomCode).emit('display-questions', questions);
+          console.log("Questions displayed to room:", roomCode);
+          console.log(questions);
+        } 
+      } catch (error) {
+        console.error(error);
+      }
+    })
   });
+
   console.log('Socket.IO server initialized');
   return ioInstance;
 }

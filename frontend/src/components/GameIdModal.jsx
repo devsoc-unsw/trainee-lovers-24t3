@@ -3,7 +3,7 @@ import useAuthStore from '@/store/useAuthStore';
 import PrimaryButton from '@/components/PrimaryButton';
 
 const GameIdModal = () => {
-  const { gameId, setGameId } = useAuthStore();
+  const { roomCode, setRoomCode } = useAuthStore();
   const router = useRouter();
 
   const handleKeyDown = (event) => {
@@ -19,8 +19,8 @@ const GameIdModal = () => {
       <p className='text-5xl text-[#4154AF] text-center'>Enter game id</p>
       <input 
         type='text'
-        value={gameId}
-        onChange={(e) => setGameId(e.target.value)}
+        value={roomCode}
+        onChange={(e) => setRoomCode(e.target.value)}
         placeholder='Enter game id'
         onKeyDown={(e) => handleKeyDown(e)}
         className='text-center w-8/12 p-4 text-black text-3xl border border-gray-300 rounded-lg outline-[#8093F1]'
