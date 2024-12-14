@@ -13,11 +13,16 @@ export default function PlayerSelectButton({ name, color = "blue" }) {
     red: "bg-gradient-to-b from-red-300 to-red-500 text-red-900",
   };
 
+  const handleVote = () => {
+    
+  }
+
   return (
     <div
       className={`flex justify-center items-center w-48 h-32 rounded-lg shadow-lg text-2xl font-bold ${
         colorStyles[color] || colorStyles.blue // Fallback to blue if color is invalid
       }`}
+      onClick={() => handleVote()}
     >
       {name}
     </div>
