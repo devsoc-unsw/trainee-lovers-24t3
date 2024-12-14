@@ -2,9 +2,11 @@ import { useRouter } from 'next/navigation';
 import { useSocket } from '../context/socketContext';
 import useAuthStore from '@/store/useAuthStore';
 import PrimaryButton from '@/components/PrimaryButton';
+import usePlayersStore from '@/store/usePlayersStore';
 
 const GameIdModal = () => {
   const { roomCode, setRoomCode, username, setShowGameIdModal, setUserId } = useAuthStore();
+  const { handleUpdateRoom } = usePlayersStore();
   const router = useRouter();
   const socket = useSocket();
 
@@ -19,22 +21,23 @@ const GameIdModal = () => {
     }
   }
 
+  const joinRoom = () => {
+    socket.emit('join-room', roomCode, username, handleSocketResponse);
+    socket.on('update-room', handleUpdateRoom);
+  }
+
   const handleKeyDown = (event) => {
     // Connect to backend and check if the gameId exists
     // If not, return error, else navigate to lobby page
     if (event.key === 'Enter') {
-      socket.emit('join-room', roomCode, username, handleSocketResponse);
-      // look for 'update-room' event
-      socket.on('update-room', (users) => {
-        console.log('Users in room:', users);
-      });
+      joinRoom();
     }
   }
 
   const handleClick = () => {
     // Connect to backend and check if the gameId exists
     // If not, return error, else navigate to lobby page
-    socket.emit('join-room', roomCode, username, handleSocketResponse);
+    joinRoom();
   }
 
   return (
