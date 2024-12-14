@@ -3,7 +3,6 @@
 import useAuthStore from "@/store/useAuthStore";
 import PrimaryButton from "../components/PrimaryButton";
 import SecondaryButton from "../components/SecondaryButton";
-import StartGameModal from "../components/StartGameModal";
 import DecorativeShapesBackground from "@/components/DecorativeShapesBackground";
 import EnterNameModal from "@/components/EnterNameModal";
 import GameIdModal from "@/components/GameIdModal";
