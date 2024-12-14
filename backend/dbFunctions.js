@@ -313,6 +313,23 @@ const getNextQuestion = (roomCode) => {
   return nextQuestion;
 }
 
+const getQuestions = async (roomCode) => {
+  try {
+    const game = await findGame(roomCode);
+    if (!game) {
+      console.error(`Game not found for roomCode: ${roomCode}`);
+      return null;
+    }
+
+    await game.populate('questions');
+
+    return game.questions;
+  } catch (error) {
+    console.error(`Error in displayQuestions: ${error.message}`);
+    throw error; 
+  }
+}
+
 // endGame function
 // - set game to inactive
 
@@ -337,5 +354,6 @@ module.exports = {
   chooseRandomPlayer,
   getCurrentWinner,
   getNextQuestion,
-  userMap
+  userMap,
+  getQuestions
 };

@@ -5,6 +5,7 @@ const joinGame = require('./dbFunctions').joinGame;
 const userMap = require('./dbFunctions').userMap;
 const addQuestion = require('./dbFunctions').addQuestion;
 const storeAnswer = require('./dbFunctions').storeAnswer;
+const getQuestions = require('./dbFunctions').getQuestions;
 
 function initializeSocketServer(server) {
 
@@ -88,6 +89,19 @@ function initializeSocketServer(server) {
         console.error(error);
       }
     });
+
+    socket.on('display-questions', async (roomCode) => {
+      try {
+        const questions = await getQuestions(roomCode);
+        if (questions) {
+          ioInstance.to(roomCode).emit('display-questions', questions);
+          console.log("Questions displayed to room:", roomCode);
+          console.log(questions);
+        } 
+      } catch (error) {
+        console.error(error);
+      }
+    })
   });
 
   console.log('Socket.IO server initialized');
