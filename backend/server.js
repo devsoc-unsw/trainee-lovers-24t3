@@ -1,7 +1,6 @@
 const { initializeSocketServer } = require('./socketServer');
 const http = require('http');
-const { createGame, joinGame, addQuestion, storeAnswer } = require('./dbFunctions');
-
+const { createGame, joinGame, addQuestion, storeAnswer, userMap } = require('./dbFunctions');
 
 const server = http.createServer();
 const connectDB = require('./db');
