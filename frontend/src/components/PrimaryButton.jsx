@@ -82,39 +82,6 @@ export default function PrimaryButton({ name, action, handleAction }) {
     }
   };
 
-
-  // const handleRedirect = () => {
-  //   if (action === "createRoom") {
-  //     setIsHost(true);
-  //     setShowEnterNameModal(true);
-  //   } else if (action === 'submitUsername') {
-  //     setShowEnterNameModal(false);
-  //     if (isHost) {
-  //       setShowSelectQuestionsModal(true);
-  //     } else {
-  //       setShowGameIdModal(true);
-  //     }
-  //   } else if (action === 'startGame') {
-  //     socket.emit('start-game', roomCode, handleStartGameSocketResponse);
-  //     router.push('/question');
-  //   } else if (action === 'enterGameId') {
-  //     joinRoom();
-  //   } else if (action === 'selectQuestions') {
-  //     createRoom();
-
-  //     socket.emit(
-  //       "add-question",
-  //       roomCode,
-  //       questionsSelected,
-  //       handleAddQuestionSocketResponse
-  //     );
-  //     router.push("/lobby");
-  //   } else if (action === "answerQuestions") {
-  //     router.push("/voting");
-  //   } else {
-  //     console.error("Invalid action provided:", action);
-  //   }
-  // };
   const handleRedirect = async () => {
     try {
       if (action === "createRoom") {
