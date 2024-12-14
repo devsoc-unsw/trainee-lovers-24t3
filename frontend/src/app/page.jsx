@@ -19,7 +19,6 @@ export default function Page() {
         {showEnterNameModal && <EnterNameModal />}
         {showGameIdModal && <GameIdModal />}
         {showSelectQuestionsModal && <SelectQuestionsModal />}
-        {showStartGameModal && <StartGameModal />}
         {!showEnterNameModal && !showGameIdModal && !showSelectQuestionsModal && !showStartGameModal && (
           <div className="flex flex-col w-full md:w-1/3 gap-2 items-center justify-center">
             <PrimaryButton name="HOST" action="createRoom" />

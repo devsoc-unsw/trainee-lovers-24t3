@@ -55,7 +55,7 @@ export default function PrimaryButton({ name, action }) {
       router.push('/lobby');
     } else if (action === 'selectQuestions') {
       setShowSelectQuestionsModal(false);
-      setShowStartGameModal(true);
+      router.push('/lobby');
     } else if (action === 'answerQuestions') {
       router.push('/voting');
     } else {
