@@ -15,40 +15,11 @@ const path = require('path');
 
 // schemas
 const Question = require('./schema/Question');
+const QuestionResponse = require('./schema/QuestionResponse');
 const GameSession = require('./schema/GameSession');
 const GameUser = require('./schema/GameUser');
 const VotingResponse = require('./schema/VotingResponse');
 const VotingSession = require('./schema/VotingSession');
-
-function generateRandomWord(categoryName, callback) {
-  fs.readdir('categoryWords', (err, files) => {
-    if (err) {
-      console.error(err);
-      callback(err, null);
-      return;
-    }
-
-    const categoryFile = files.find(file => file === `${categoryName}.txt`);
-    if (!categoryFile) {
-      const error = `No file found for category: ${categoryName}`;
-      console.error(error);
-      callback(new Error(error), null);
-      return;
-    }
-
-    fs.readFile(path.join('categoryWords', categoryFile), 'utf8', (err, data) => {
-      if (err) {
-        console.error(err);
-        callback(err, null);
-        return;
-      }
-
-      const words = data.split('\n');
-      const randomIndex = Math.floor(Math.random() * words.length);
-      callback(null, words[randomIndex]);
-    });
-  });
-}
 
 const generateUniqueRoomCode = async () => {
   let roomCode;
@@ -111,9 +82,8 @@ const findGame = async (roomCode) => {
     if (!game) {
       console.error(`Game not found with roomCode: ${roomCode}`);
       return null;
-    } else {
-      console.log("Game found:", game);
     }
+
     return game;
   }
   catch (err) {
@@ -183,20 +153,20 @@ const addQuestion = async (questionContent, roomCode) => {
   }
 };
 
-const storeAnswer = async (questionContent, playerId, response, roomCode) => {
+const storeAnswer = async (qid, playerId, response, roomCode) => {
   try {
     const game = await findGame(roomCode);
     if (!game) {
       throw new Error(`Game not found with roomCode: ${roomCode}`)
     }
 
-    const question = await Question.findOne({ questionContent: questionContent });
+    const question = await Question.findById(qid);
     if (!question) {
-      throw new Error(`Question not found with questionContent: ${questionContent}`)
+      throw new Error(`Question not found with qid: ${qid}`)
     }
 
     const newResponse = new QuestionResponse({
-      qid: questionContent,
+      qid: qid,
       uid: playerId,
       response: response
     })
@@ -206,7 +176,31 @@ const storeAnswer = async (questionContent, playerId, response, roomCode) => {
     question.questionResponses.push(newResponse._id);
     await question.save();
 
-    console.log(`${playerId} has answered ${questionContent}`);
+    console.log("Player response saved:", newResponse);
+    console.log("questionresponses.length = ", question.questionResponses.length, "game.users.length = ", game.users.length);
+
+    
+    // calculate the winner for this question
+    if (question.questionResponses.length === game.users.length) {
+      // this replaces the object ids with the actual objects
+      await question.populate('questionResponses');
+
+      // loop through all responses and find who has the max
+      // response
+      let maxResponse = -1;
+      let winnerId = null;
+      question.questionResponses.forEach((res) => {
+        if (res.response > maxResponse) {
+          maxResponse = res.response;
+          winnerId = res.uid;
+        }
+      });
+
+      question.winner = winnerId;
+      await question.save();
+
+      console.log(`Winner for question ${qid}: ${winnerId}`);
+    }
     
   } catch (err) {
     console.error(err.message);
@@ -249,7 +243,6 @@ const chooseRandomPlayer = async (prevPlayerId, roomCode, questionId) => {
     return chooseRandomPlayer(prevPlayerId, roomCode, questionId);
   }
 }
-
 
 // obtains the winner with the more votes in the current voting ession
 const getCurrentWinner = async (roomCode, questionId, votingSessionId) => {
@@ -315,5 +308,5 @@ const getNextQuestion = (roomCode) => {
 //     console.log(game);
 //   }
 // });
-
-module.exports = generateRandomWord;
+addQuestion("How many huzzie you got?", "CS80");
+// storeAnswer("675d0bdf36f9bfb9d9affc65", "675c433a555598051dba0842", 5, "CS80");
