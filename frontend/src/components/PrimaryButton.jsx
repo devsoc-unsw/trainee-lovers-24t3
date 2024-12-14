@@ -64,11 +64,11 @@ export default function PrimaryButton({ name, action, handleAction }) {
 
   const joinRoom = () => {
     return new Promise((resolve, reject) => {
-      socket.emit('join-room', roomCode, username, (response) => {
-        if (response && !response.error) {
+      socket.emit('join-room', roomCode, username, (error, response) => {
+        if (response && !error) {
           resolve(response); // Room join succeeded, resolve with response
         } else {
-          reject(response?.error || "Failed to join room"); // Handle error
+          reject(error || "Failed to join room"); // Handle error
         }
       });
     });
@@ -101,7 +101,10 @@ export default function PrimaryButton({ name, action, handleAction }) {
 
       } else if (action === "enterGameId") {
 
-        await joinRoom();
+        const roomResponse = await joinRoom();
+        setRoomCode(roomResponse.roomCode);
+        setUserId(roomResponse.userId);
+        router.push("/question");
 
       } else if (action === "selectQuestions") {
 
