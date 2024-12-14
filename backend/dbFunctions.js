@@ -221,14 +221,25 @@ const votePlayer = async (roomCode, questionId, playerId, response) => {
 }
 
 // pass in previous player ids so we don't choose the same players
-const chooseRandomPlayer = async (prevPlayerId, roomCode, questionId) => {
+const chooseRandomPlayer = async (prevPlayerIds, roomCode, questionId) => {
   const game = await findGame(roomCode);
   const players = game.users;
   const randomIndex = Math.floor(Math.random() * players.length);
   const randomPlayer = players[randomIndex];
-  if (randomPlayer === prevPlayerId) {
-    return chooseRandomPlayer(prevPlayerId, roomCode, questionId);
+  
+  if (prevPlayerIds.length === players.length) {
+    console.error("All players have been chosen");
+    // TODO: End game / get next question
+    // Currently undefined behaviour
+    return null;
   }
+
+  if (prevPlayerIds.includes(randomPlayer)) {
+    return chooseRandomPlayer(prevPlayerIds, roomCode, questionId);
+  }
+
+  return randomPlayer;
+
 }
 
 // obtains the winner with the more votes in the current voting ession
