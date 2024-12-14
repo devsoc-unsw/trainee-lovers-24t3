@@ -22,7 +22,7 @@ export default function PrimaryButton({ name, action, handleAction }) {
     setUserId,
     roomCode,
   } = useAuthStore();
-  const { setPlayers} = usePlayersStore();
+  const { handleUpdateRoom } = usePlayersStore();
 
   useEffect(() => {
     console.log("PrimaryButton mounted with:", name, action);
@@ -43,10 +43,6 @@ export default function PrimaryButton({ name, action, handleAction }) {
     setUserId(response.userId);
   };
 
-  const handleUpdateRoom = (userDetails) => {
-    setPlayers(userDetails.map(u => u.username))
-  }
-
   const createRoom = () => {
     return new Promise((resolve, reject) => {
       socket.emit('create-room', username, (error, response) => {
@@ -58,12 +54,6 @@ export default function PrimaryButton({ name, action, handleAction }) {
         }
       });
     });
-    // socket.on('update-room', handleUpdateRoom)
-  }
-
-  const joinRoom = () => {
-    socket.emit('join-room', roomCode, username, handleSocketResponse);
-    socket.on('update-room', handleUpdateRoom)
   }
 
   const handleAddQuestionSocketResponse = (error, response) => {
@@ -97,7 +87,9 @@ export default function PrimaryButton({ name, action, handleAction }) {
       } else if (action === "selectQuestions") {
 
         const roomResponse = await createRoom(); // Wait for room creation to complete
-        
+
+        socket.on('update-room', handleUpdateRoom)
+
         console.log("Room created:", roomResponse);
         setRoomCode(roomResponse.roomCode);
         setUserId(roomResponse.userId);
