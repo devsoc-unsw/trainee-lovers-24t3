@@ -27,7 +27,7 @@ const EnterNameModal = () => {
         onChange={(e) => setUsername(e.target.value)}
         placeholder='Enter your name'
         className='text-center w-8/12 p-4 text-black text-3xl border border-gray-300 rounded-lg outline-[#8093F1]'
-        maxLength={10}
+        maxLength={20}
         onKeyDown={(e) => handleKeyDown(e)}
       />
       <PrimaryButton name='Enter' action='submitUsername' />
