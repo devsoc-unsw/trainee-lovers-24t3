@@ -34,7 +34,9 @@ function initializeSocketServer(server) {
             const roomCode = result.roomCode;
             socket.join(result.roomCode);
             const users = await userMap(roomCode);
+
             ioInstance.to(roomCode).emit('update-room', users);
+            console.log("We have these users:", users);
 
             console.log(`${username} created room:`, result.roomCode);
             callback(null, result);

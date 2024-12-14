@@ -88,7 +88,10 @@ export default function PrimaryButton({ name, action, handleAction }) {
 
         const roomResponse = await createRoom(); // Wait for room creation to complete
 
-        socket.on('update-room', handleUpdateRoom)
+        socket.on('update-room', async (users) => {
+          console.log("Users updated:", users);
+          handleUpdateRoom(users);
+        });
 
         console.log("Room created:", roomResponse);
         setRoomCode(roomResponse.roomCode);
@@ -102,6 +105,7 @@ export default function PrimaryButton({ name, action, handleAction }) {
           questionsSelected,
           handleAddQuestionSocketResponse
         );
+
         router.push("/lobby");
         
       } else if (action === "answerQuestions") {
