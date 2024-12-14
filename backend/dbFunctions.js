@@ -101,6 +101,7 @@ const joinGame = async (roomCode, username, callback) => {
       userId: newUser._id,
       roomCode: roomCode
     });
+    
   } catch (err) {
     console.error(err.message);
     return callback(err, null);

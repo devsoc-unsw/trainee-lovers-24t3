@@ -37,7 +37,7 @@ function initializeSocketServer(server) {
         });
       } catch (error) {
         console.error(error);
-        callback({ error: err });
+        callback({ error: "error creating room" });
       }
     });
 
@@ -46,31 +46,21 @@ function initializeSocketServer(server) {
         joinGame(roomCode, username, (err, result) => {
           if (err) {
             console.error("Error joining room: ", err);
-            return callback({error: err.message});
+            return callback({error: err});
           }
 
           socket.join(roomCode);
+
+          // will send back the userId & roomcode to the client
           callback(null, result);
-        
+
+          ioInstance.to(roomCode).emit('update-room', userMap(roomCode));
+          console.log(`${username} joined room:`, roomCode);
         });
       } catch (error) {
-
-    
-        const usersInRoom = userMap(roomCode);
-
-        console.log('users in room ', usersInRoom)
-    
-        // update callback function with the list of users
-        callback(usersInRoom);
-    
-        // alert users that u joined room
-        ioInstance.to(roomCode).emit('update-room', usersInRoom);
+        console.error(error);
+        callback({error: "error joining room"});
       }
-    });
-
-    socket.on('update-ready', (roomCode, userId) => {
-      console.log('updated ready for userId: ', userId)  
-      updateReady(roomCode, userId);
     });
 
     socket.on('disconnect', () => {
@@ -126,28 +116,6 @@ function initializeSocketServer(server) {
                 console.log(`Room ${roomCode} deleted as it is now empty.`);
             }
         }
-    });
-
-    socket.on('update-time', (roomCode, time) => {
-      if (time == "2 min") {
-        time = 120;
-      } else if (time == "4 min") {
-        time = 240;
-      } else if (time == "6 min") {
-        time = 360;
-      } else if (time == "8 min") {
-        time = 480;
-      } else {
-        return;
-      }
-
-      console.log('time is', time);
-
-      if (rooms[roomCode]) {
-        rooms[roomCode].defaultTime = time;
-        rooms[roomCode].timer = time;
-        console.log('default time is now', rooms[roomCode].defaultTime);
-      }
     });
 
     socket.on('player-loaded-round', (roomCode, userId) => {
