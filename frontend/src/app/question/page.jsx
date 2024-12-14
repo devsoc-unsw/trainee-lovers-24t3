@@ -1,10 +1,7 @@
 'use client'
 
-<<<<<<< HEAD
-=======
 import { useEffect, useState } from 'react';
 import useAuthStore from '@/store/useAuthStore';
->>>>>>> f4b5332ca5360c7d425efc9692d58b4bf2652060
 import QuestionBox from '@/components/QuestionBox';
 import DecorativeShapesBackground from '@/components/DecorativeShapesBackground';
 import PrimaryButton from '@/components/PrimaryButton';
