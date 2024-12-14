@@ -79,17 +79,17 @@ const findGame = async (roomCode) => {
   }
 }
 
-const joinGame = async (roomCode, username, callback) => {
+const joinGame = async (roomCode, username) => {
   try {
     const game = await findGame(roomCode);
     if (!game) {
-      return callback(new Error(`Game not found with roomCode: ${roomCode}`), null);
+      throw new Error(`Game not found with roomCode: ${roomCode}`);
     } 
 
     const newUser = new GameUser({
       roomCode: roomCode,
       username: username
-    });
+    })
 
     await newUser.save();
 
@@ -97,14 +97,10 @@ const joinGame = async (roomCode, username, callback) => {
     game.users.push(newUser._id);
     await game.save();
 
-    return callback(null, {
-      userId: newUser._id,
-      roomCode: roomCode
-    });
-    
+    return game;
   } catch (err) {
     console.error(err.message);
-    return callback(err, null);
+    return null;
   }
 }
 
@@ -198,27 +194,6 @@ const storeAnswer = async (qid, playerId, response, roomCode) => {
   }
 }
 
-const userMap = async (roomCode) => {
-  try {
-    const game = await findGame(roomCode);
-    if (!game) {
-      throw new Error(`Game not found for roomCode: ${roomCode}`);
-    }
-
-    await game.populate('users');
-    // might need to return more 
-    return game.users.map((user) => ({
-      username: user.username,
-      points: user.points,
-      isActive: user.isActive,
-      isHost: user.isHost,
-    }));
-  } catch (error) {
-    console.error(`Error in userMap: ${error.message}`);
-    throw error; 
-  }
-}
-
 const votePlayer = async (roomCode, questionId, playerId, response) => {
   try {
     const votingResponse = await VotingResponse.create({
@@ -246,14 +221,25 @@ const votePlayer = async (roomCode, questionId, playerId, response) => {
 }
 
 // pass in previous player ids so we don't choose the same players
-const chooseRandomPlayer = async (prevPlayerId, roomCode, questionId) => {
+const chooseRandomPlayer = async (prevPlayerIds, roomCode, questionId) => {
   const game = await findGame(roomCode);
   const players = game.users;
   const randomIndex = Math.floor(Math.random() * players.length);
   const randomPlayer = players[randomIndex];
-  if (randomPlayer === prevPlayerId) {
-    return chooseRandomPlayer(prevPlayerId, roomCode, questionId);
+  
+  if (prevPlayerIds.length === players.length) {
+    console.error("All players have been chosen");
+    // TODO: End game / get next question
+    // Currently undefined behaviour
+    return null;
   }
+
+  if (prevPlayerIds.includes(randomPlayer)) {
+    return chooseRandomPlayer(prevPlayerIds, roomCode, questionId);
+  }
+
+  return randomPlayer;
+
 }
 
 // obtains the winner with the more votes in the current voting ession
@@ -324,5 +310,4 @@ module.exports = {
   chooseRandomPlayer,
   getCurrentWinner,
   getNextQuestion,
-  userMap,
 };
