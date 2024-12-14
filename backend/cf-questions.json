@@ -1,0 +1,44 @@
+{
+  "questions" : [
+    {
+      "keyword": "WAM",
+      "question": "What is your WAM (Weighted Average Mark)?"
+    },
+    {
+      "keyword": "ATAR",
+      "question": "What is your ATAR?"
+    },
+    {
+      "keyword": "alcohol tolerance",
+      "question": "How many shots can you drink?"
+    },
+    {
+      "keyword": "kiss count",
+      "question": "How many people have you kissed?"
+    },
+    {
+      "keyword": "body count",
+      "question": "How many people have you slept with?"
+    },
+    {
+      "keyword": "amount of exes",
+      "question": "How many exes do you have?"
+    },
+    {
+      "keyword": "crush count",
+      "question": "How many crushes have you had in total?"
+    },
+    {
+      "keyword": "rejections count",
+      "question": "How many times have you been rejected?"
+    }, 
+    {
+      "keyword": "relationship cheating frequency",
+      "question": "How many times have you cheated in a relationship?"
+    }, 
+    {
+      "keyword": "rice purity score",
+      "question": "What is your rice purity score?"
+    }
+  ]
+}
