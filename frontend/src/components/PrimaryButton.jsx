@@ -83,6 +83,7 @@ export default function PrimaryButton({ name, action, handleAction }) {
       } else if (action === "startGame") {
 
         router.push("/question");
+        // emit a signal to everyone to start the gmae
 
       } else if (action === "selectQuestions") {
 
