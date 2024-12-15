@@ -9,6 +9,7 @@ import { useSocket } from '@/context/socketContext';
 import useQuestionStore from '@/store/useQuestionStore';
 import LoadingPage from '@/components/LoadingPage/LoadingPage';
 import { useRouter } from 'next/navigation';
+import usePlayersStore from '@/store/usePlayersStore';
 
 const Page = () => {
   // To be deleted 
@@ -19,6 +20,7 @@ const Page = () => {
   // question has fields: qId, questionStr
   const { isHost, userId, roomCode, isLoading, setIsLoading } = useAuthStore();
   const { questionStore, setQuestionStore } = useQuestionStore();
+  const { setFirstPlayer, setSecondPlayer } = usePlayersStore();  
 
   const questionArray = [
     {_id: "675d78f20612758cf507e8af", questionContent: 'Your WAM'},
@@ -42,10 +44,15 @@ const Page = () => {
       socket.emit("start-game", roomCode, handleStartGameSocketResponse);
     }
 
-    socket.on('all-answered', () => {
+    socket.on('all-answered', (data) => {
+      const {player1, player2} = data;
+      setFirstPlayer(player1);
+      setSecondPlayer(player2);
       console.log("All questions answered");
+      console.log("Player 1:", player1, "Player 2:", player2);
       // setIsLoading to false
       setIsLoading(false);
+
       // redirect to voting page
       router.push('/voting');
     });

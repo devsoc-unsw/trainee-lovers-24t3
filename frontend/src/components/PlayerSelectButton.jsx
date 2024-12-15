@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSocket } from '@/context/socketContext';
 
 /**
  * 
@@ -6,8 +7,9 @@ import React from 'react';
  * @param {string} props.name - The name to display on the button
  * @param {string} [props.color="blue"] - The color theme for the button ("blue" or "red")
  */
-export default function PlayerSelectButton({ name, color = "blue", roomCode, qid, pid, response }) {
+export default function PlayerSelectButton({ name, color, roomCode, qid, pid, response }) {
   // Define styles for blue and red themes
+  const socket = useSocket();
   const colorStyles = {
     blue: "bg-gradient-to-b from-blue-300 to-blue-500 text-blue-900",
     red: "bg-gradient-to-b from-red-300 to-red-500 text-red-900",

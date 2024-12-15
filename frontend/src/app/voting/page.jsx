@@ -6,19 +6,20 @@ import useAuthStore from '@/store/useAuthStore';
 import PlayerSelectButton from '@/components/PlayerSelectButton';
 import DecorativeShapesBackground from '@/components/DecorativeShapesBackground';
 import useQuestionStore from '@/store/useQuestionStore';
+import usePlayersStore from '@/store/usePlayersStore';
 
 // Main Voting Page Component
 export default function VotingPage() {
-  const { questionArr } = useQuestionStore();
+  const { questionStore } = useQuestionStore();
   const [ questionIndex, setQuestionIndex ] = useState(0);
-  const [ questionStr, setQuestionStr ] = useState(`Who has the highest ${questionArr[questionIndex]}`);
-  const [ player1, setPlayer1 ] = useState('');
-  const [ player2, setPlayer2 ] = useState('');
+  const [ questionStr, setQuestionStr ] = useState(`Who has the higher ${questionStore[questionIndex].keyword}`);
+  const {firstPlayer, setFirstPlayer, secondPlayer, setSecondPlayer} = usePlayersStore();
+  // const [ firstPlayer, setFirstPlayer ] = useState(first);
+  // const [ secondPlayer, setSecondPlayer ] = useState('');
   const [ winner, setWinner ] = useState('');
 
   const socket = useSocket();
-  const roomCode = useAuthStore();
-  const userId = useAuthStore();
+  const {roomCode, userId} = useAuthStore();
 
   const reset = () => {
     setQuestionIndex(questionIndex => questionIndex + 1);
@@ -26,18 +27,22 @@ export default function VotingPage() {
 
   // To update question string when questionIndex increases
   useEffect(() => {
-    if (questionArr.length !== 0) {
-      setQuestionStr(`Who has the highest ${questionArr.questions[questionIndex].keyword}`);
+    if (questionStore.length !== 0) {
+      setQuestionStr(`Who has the higher ${questionStore[questionIndex].keyword}`);
     }
-  }, [questionIndex, questionArr])
+  }, [questionIndex, questionStore])
 
   useEffect(() => {
     console.log(roomCode);
     socket.on('next-question', (data) => {
       console.log('Next question received:', data);
-      const { luhWinner, questionId } = data;
-      console.log('Winner:', luhWinner, 'Next Question ID:', questionId);
-      setWinner(luhWinner);
+      const { winner, player1, player2 } = data;
+      console.log('Winner:', winner);
+      console.log('Player 1:', player1, 'Player 2:', player2);
+      setFirstPlayer(player1);
+      setSecondPlayer(player2);
+      
+      setWinner(winner);
       // just do like a text saying winner of this round is
       // winner!
     });
@@ -51,9 +56,9 @@ export default function VotingPage() {
     socket.on('display-results', (data) => {
       console.log('Results received:', data);
       const { resultPlayer1, resultPlayer2 } = data;
-      console.log('Player 1:', player1, 'Player 2:', player2);
-      setPlayer1(resultPlayer1);
-      setPlayer2(resultPlayer2);
+      console.log('Player 1:', firstPlayer, 'Player 2:', secondPlayer);
+      setFirstPlayer(resultPlayer1);
+      setSecondPlayer(resultPlayer2);
     });
   }, [])
 
@@ -72,12 +77,12 @@ export default function VotingPage() {
 			{/* Buttons */}
 			<div className="flex flex-col gap-4 justify-center items-center">
 				<PlayerSelectButton 
-          name={player1} 
-          color="blue"
+          name={firstPlayer} 
           roomCode={roomCode}
-          qid={questionArr.questions[questionIndex].qid}
+          qid={questionStore[questionIndex]._id}
           pid={userId}
           response={0}
+          color="blue"
         />
 				<div className="relative">
 				<div className="absolute -top-5 -left-1/2 transform -translate-x-1/2 bg-white text-black w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">
@@ -86,12 +91,12 @@ export default function VotingPage() {
 				</div>
 				</div>
 				<PlayerSelectButton 
-          name={player2} 
-          color="red" 
+          name={secondPlayer} 
           roomCode={roomCode}
-          qid={questionArr.questions[questionIndex].qid}
+          qid={questionStore[questionIndex]._id}
           pid={userId}
           response={1}
+          color="red" 
         />
 			</div>
         </div>

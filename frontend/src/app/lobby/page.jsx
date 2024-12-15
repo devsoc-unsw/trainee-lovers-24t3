@@ -24,6 +24,7 @@ const Page = () => {
     // if its not the host, listen for the display questions
     socket.on('display-questions', (response) => {
       setQuestionStore(response.questions);
+      console.log('Questions received:', response.questions);
       router.push('/question');
     });
   }, [socket]);
