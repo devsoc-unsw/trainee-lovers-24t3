@@ -7,14 +7,17 @@ import DecorativeShapesBackground from '@/components/DecorativeShapesBackground'
 import PrimaryButton from '@/components/PrimaryButton';
 import { useSocket } from '@/context/socketContext';
 import useQuestionStore from '@/store/useQuestionStore';
+import LoadingPage from '@/components/LoadingPage/LoadingPage';
+import { useRouter } from 'next/navigation';
 
 const Page = () => {
   // To be deleted 
   const socket = useSocket();
+  const router = useRouter();
 
   // an array of questions
   // question has fields: qId, questionStr
-  const { isHost, userId, roomCode } = useAuthStore();
+  const { isHost, userId, roomCode, isLoading, setIsLoading } = useAuthStore();
   const { questionStore, setQuestionStore } = useQuestionStore();
 
   const questionArray = [
@@ -38,6 +41,16 @@ const Page = () => {
     if (isHost) {
       socket.emit("start-game", roomCode, handleStartGameSocketResponse);
     }
+
+    socket.on('all-answered', () => {
+      console.log("All questions answered");
+      // setIsLoading to false
+      setIsLoading(false);
+      // redirect to voting page
+      router.push('/voting');
+    });
+    
+
   }, [socket]);
 
   const [answers, setAnswers] = useState({});
@@ -62,11 +75,15 @@ const Page = () => {
     } catch (error) {
       console.error("Error emitting save-question event:", error);
     }
+    setIsLoading(true);
+    console.log("Set is loading to true");
   }
 
   return (
     <div className='flex w-full h-screen bg-white text-center text-black text-3xl'>
       <DecorativeShapesBackground />
+      {(!isHost && isLoading) ? <LoadingPage/> :
+      (
       <div className='absolute inset-0 flex flex-col justify-center items-center gap-3 w-full p-4'>
           <h2 className='text-5xl text-[#8093F1] mb-3'>QUESTIONS</h2>
           {questionStore.map((question, i) => {
@@ -76,6 +93,9 @@ const Page = () => {
             <PrimaryButton name='Submit Answer' action='submitAnswers' handleAction={handleSubmitAnswer} className='mt-3'/>
           </div>
       </div>
+      )
+      }
+
     </div>
   )
 }
