@@ -98,9 +98,11 @@ function initializeSocketServer(server) {
 
         // if all answered then emit all answered
         if (allAnswered) {
-          ioInstance.to(roomCode).emit('all-answered');
+          // first index
+          const players = await choosePlayers(roomCode, questionsAnswered[0].qid);
+          // will send the all-answered event to the room prompting the route to display the questions
+          ioInstance.to(roomCode).emit('all-answered', { player1: players.player1, player2: players.player2 });
         }
-
         console.log("All questions saved");
       } catch (error) {
         console.error(error);
@@ -121,48 +123,6 @@ function initializeSocketServer(server) {
       }
     });
 
-    // choose the players to vote on
-    socket.on('choose-players', async (roomCode, questionId, callback) => {
-      try {
-        const players = await choosePlayers(roomCode, questionId);
-        if (!players) {
-          console.error('No players could be chosen.');
-          return callback({ error: 'No players available to choose.' });
-        }
-        
-        switch (players.status) {
-          case 'NEXT_QUESTION':
-            console.log('All players have been chosen, moving to the next question.');
-    
-            ioInstance.to(roomCode).emit('next-question', { questionId: players.qid });
-            return callback(null, { status: 'NEXT_QUESTION', message: 'Moving to the next question.' });
-    
-          case 'NO_MORE_QUESTIONS':
-            console.log('No more questions to display. Ending the game.');
-    
-            ioInstance.to(roomCode).emit('end-game');
-            return callback(null, { status: 'NO_MORE_QUESTIONS', message: 'Game ended.' });
-    
-          case 'PLAYERS_SELECTED':
-            console.log('Players chosen:', players);
-    
-            // Send the chosen players to the client
-            return callback(null, {
-              status: 'PLAYERS_SELECTED',
-              player1: players.player1,
-              player2: players.player2,
-            });
-    
-          default:
-            console.error('Unknown status received from choosePlayers:', players.status);
-            return callback({ error: 'Unknown status received.' });
-        }
-      } catch (error) {
-        console.error(error);
-        callback({ error: 'Error choosing players' });
-      }
-    });
-
     socket.on('vote-player', async (roomCode, qid, pid, response) => {
       try {
         const allVoted = await votePlayer(roomCode, qid, pid, response);
@@ -170,7 +130,25 @@ function initializeSocketServer(server) {
 
         if (allVoted) {
           // if all voted, then emit to display results and move onto next question
-          ioInstance.to(roomCode).emit('display-question-results', qid);
+          // then choose players for next question
+          const players = await choosePlayers(roomCode, qid);
+          if (!players) {
+            console.error('No players could be chosen.');
+          }
+      
+          switch (players.status) {
+            case 'NEXT_QUESTION':
+              console.log('All players have been chosen, moving to the next question.');
+              // give the winner of the previous question and next question
+              ioInstance.to(roomCode).emit('next-question', { winner: players.winner, questionId: players.qid });
+            case 'NO_MORE_QUESTIONS':
+              console.log('No more questions to display. Ending the game.');
+              ioInstance.to(roomCode).emit('end-game');      
+            case 'PLAYERS_SELECTED':
+              ioInstance.to(roomCode).emit('display-results', { player1: players.player1, player2: players.player2 });      
+            default:
+              console.error('Unknown status received from choosePlayers:', players.status);
+          }
         }
       } catch (error) {
         console.error(error);

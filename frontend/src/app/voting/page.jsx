@@ -5,35 +5,20 @@ import { useSocket } from '@/context/socketContext';
 import useAuthStore from '@/store/useAuthStore';
 import PlayerSelectButton from '@/components/PlayerSelectButton';
 import DecorativeShapesBackground from '@/components/DecorativeShapesBackground';
+import useQuestionStore from '@/store/useQuestionStore';
 
 // Main Voting Page Component
 export default function VotingPage() {
-  const [ questionArr,  setQuestionArr ] = useState([]);
+  const { questionArr } = useQuestionStore();
   const [ questionIndex, setQuestionIndex ] = useState(0);
   const [ questionStr, setQuestionStr ] = useState(`Who has the highest ${questionArr[questionIndex]}`);
   const [ player1, setPlayer1 ] = useState('');
   const [ player2, setPlayer2 ] = useState('');
+  const [ winner, setWinner ] = useState('');
 
   const socket = useSocket();
   const roomCode = useAuthStore();
-
-  const handleChoosePlayer = (error, result) => {
-    if (error) {
-      console.error('Error occured when choosing two random players');
-    } else {
-      // if (result.status === 'PLAYER_SELECTED') {
-      //   setPlayer1(result.player1);
-      //   setPlayer2(result.player2);
-      // }
-      console.log(result);
-    }
-  }
-
-  const choosePlayer = () => {
-    // change this to roomCode later
-    socket.emit('choose-players', 'HKMT', questionArr.questions[questionIndex]._id, handleChoosePlayer) 
-    console.log(questionArr.questions[questionIndex]._id);
-  }
+  const userId = useAuthStore();
 
   const reset = () => {
     setQuestionIndex(questionIndex => questionIndex + 1);
@@ -43,28 +28,33 @@ export default function VotingPage() {
   useEffect(() => {
     if (questionArr.length !== 0) {
       setQuestionStr(`Who has the highest ${questionArr.questions[questionIndex].keyword}`);
-      choosePlayer();
     }
   }, [questionIndex, questionArr])
 
-  const handleStartGame = (error, result) => {
-    if (error) {
-      console.error('Could start game');
-    } else {
-      console.log('Game started successfully', result);
-      setQuestionArr(result);
-      console.log(result);
-    }
-  }
-
   useEffect(() => {
     console.log(roomCode);
-    socket.emit('start-game', 'HKMT', handleStartGame);
+    socket.on('next-question', (data) => {
+      console.log('Next question received:', data);
+      const { luhWinner, questionId } = data;
+      console.log('Winner:', luhWinner, 'Next Question ID:', questionId);
+      setWinner(luhWinner);
+      // just do like a text saying winner of this round is
+      // winner!
+    });
 
-    socket.on('display-questions', async ({questions}) => {
-      console.log(questions)
-      setQuestionArr(questions);
-    })
+    // Handle 'end-game' event
+    socket.on('end-game', () => {
+      console.log('Game has ended');
+    });
+
+    // Handle 'display-results' event
+    socket.on('display-results', (data) => {
+      console.log('Results received:', data);
+      const { resultPlayer1, resultPlayer2 } = data;
+      console.log('Player 1:', player1, 'Player 2:', player2);
+      setPlayer1(resultPlayer1);
+      setPlayer2(resultPlayer2);
+    });
   }, [])
 
   return (
@@ -84,6 +74,10 @@ export default function VotingPage() {
 				<PlayerSelectButton 
           name={player1} 
           color="blue"
+          roomCode={roomCode}
+          qid={questionArr.questions[questionIndex].qid}
+          pid={userId}
+          response={0}
         />
 				<div className="relative">
 				<div className="absolute -top-5 -left-1/2 transform -translate-x-1/2 bg-white text-black w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">
@@ -94,6 +88,10 @@ export default function VotingPage() {
 				<PlayerSelectButton 
           name={player2} 
           color="red" 
+          roomCode={roomCode}
+          qid={questionArr.questions[questionIndex].qid}
+          pid={userId}
+          response={1}
         />
 			</div>
         </div>
