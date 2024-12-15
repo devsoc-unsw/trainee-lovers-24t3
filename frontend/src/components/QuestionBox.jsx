@@ -3,11 +3,11 @@ import React from "react";
 // question has fields: id, questionContent
 export default function QuestionBox({ question, setAnswers }) {
   return (
-    <div className="bg-[#A1CDF7] w-[350px] h-[120px] rounded-[30px] content-center text-center shadow-md shadow-[#01136F] p-2 font-mouse">
+    <div className="flex-1 bg-[#A1CDF7] w-[350px] h-[150px] rounded-[30px] content-center text-center shadow-md shadow-[#01136F] p-3 font-mouse">
       <div className="text-3xl text-[#01136F]">
         <p>{question.questionContent}</p>
       </div>
-      <div className="w-[100%]">
+      <div className="w-[100%] h-full">
         <input
           placeholder="Enter your answer..."
           type="text"
