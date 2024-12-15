@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 const useAuthStore = create((set, get) => ({
   isHost: false,
+  isLoading: false,
   username: "",
   roomCode: '',
   userId: "",
@@ -19,6 +20,7 @@ const useAuthStore = create((set, get) => ({
   setShowStartGameModal: (showModal) => set({ showStartGameModal: showModal }),
   setShowSelectQuestionsModal: (showModal) => set({ showSelectQuestionsModal: showModal }),
   setUserId: (id) => set({ userId: id }),
+  setIsLoading: (loading) => set({ isLoading: loading }),
 }));
 
 export default useAuthStore;
