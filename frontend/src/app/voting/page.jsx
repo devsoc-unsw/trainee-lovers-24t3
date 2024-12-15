@@ -41,7 +41,8 @@ export default function VotingPage() {
       console.log('Player 1:', player1, 'Player 2:', player2);
       setFirstPlayer(player1);
       setSecondPlayer(player2);
-      
+      reset();
+
       setWinner(winner);
       // just do like a text saying winner of this round is
       // winner!
