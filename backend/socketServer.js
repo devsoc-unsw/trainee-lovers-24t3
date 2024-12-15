@@ -91,13 +91,16 @@ function initializeSocketServer(server) {
 
     socket.on('save-question', async (roomCode, questionsAnswered, userId) => {
       try {
+        let allAnswered = false;
         for (const question of questionsAnswered) {
-          const allAnswered = await storeAnswer(question.qid, userId, question.response, roomCode);
+          allAnswered = await storeAnswer(question.qid, userId, question.response, roomCode);
         }
 
         // if all answered then emit all answered
-        ioInstance.to(roomCode).emit('all-answered');
-        
+        if (allAnswered) {
+          ioInstance.to(roomCode).emit('all-answered');
+        }
+
         console.log("All questions saved");
       } catch (error) {
         console.error(error);

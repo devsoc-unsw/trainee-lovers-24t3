@@ -63,7 +63,7 @@ const Page = () => {
       socket.emit('save-question', roomCode, questionAnswers, userId);
     } catch (error) {
       console.error("Error emitting save-question event:", error);
-    }  
+    }
   }
 
   return (
@@ -75,7 +75,7 @@ const Page = () => {
             return <QuestionBox question={question} setAnswers={setAnswers} key={i}/>
           })}
           <div className='flex w-full sm:w-3/4 md:w-1/3 justify-center items-center'>
-            <PrimaryButton name='SUBMIT ANSWER' action='submitAnswers' handleAction={handleSubmitAnswer} className='mt-3'/>
+            <PrimaryButton name='Submit Answer' action='submitAnswers' handleAction={handleSubmitAnswer} className='mt-3'/>
           </div>
       </div>
     </div>
