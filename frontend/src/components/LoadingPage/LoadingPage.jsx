@@ -1,8 +1,7 @@
 import React from 'react'
 import './LoadingPage.css';
 
-export default function LoadingPage({isVisible}) {
-  if (!isVisible) return null;
+export default function LoadingPage() {
 
   return (
     <div className="loading-screen">
