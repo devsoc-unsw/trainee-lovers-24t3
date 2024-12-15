@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import useAuthStore from '@/store/useAuthStore';
-import QuestionBox from '@/components/QuestionBox';
-import DecorativeShapesBackground from '@/components/DecorativeShapesBackground';
-import PrimaryButton from '@/components/PrimaryButton';
-import { useSocket } from '@/context/socketContext';
-import useQuestionStore from '@/store/useQuestionStore';
-import LoadingPage from '@/components/LoadingPage/LoadingPage';
-import { useRouter } from 'next/navigation';
-import usePlayersStore from '@/store/usePlayersStore';
+import { useEffect, useState } from "react";
+import useAuthStore from "@/store/useAuthStore";
+import QuestionBox from "@/components/QuestionBox";
+import DecorativeShapesBackground from "@/components/DecorativeShapesBackground";
+import PrimaryButton from "@/components/PrimaryButton";
+import { useSocket } from "@/context/socketContext";
+import useQuestionStore from "@/store/useQuestionStore";
+import LoadingPage from "@/components/LoadingPage/LoadingPage";
+import { useRouter } from "next/navigation";
+import usePlayersStore from "@/store/usePlayersStore";
 
 const Page = () => {
   // To be deleted
@@ -20,7 +20,7 @@ const Page = () => {
   // question has fields: qId, questionStr
   const { isHost, userId, roomCode, isLoading, setIsLoading } = useAuthStore();
   const { questionStore, setQuestionStore } = useQuestionStore();
-  const { setFirstPlayer, setSecondPlayer } = usePlayersStore();  
+  const { setFirstPlayer, setSecondPlayer } = usePlayersStore();
 
   const questionArray = [
     { _id: "675d78f20612758cf507e8af", questionContent: "Your WAM" },
@@ -44,8 +44,8 @@ const Page = () => {
       socket.emit("start-game", roomCode, handleStartGameSocketResponse);
     }
 
-    socket.on('all-answered', (data) => {
-      const {player1, player2} = data;
+    socket.on("all-answered", (data) => {
+      const { player1, player2 } = data;
       setFirstPlayer(player1);
       setSecondPlayer(player2);
       console.log("All questions answered");
@@ -90,9 +90,9 @@ const Page = () => {
       {!isHost && isLoading ? (
         <LoadingPage />
       ) : (
-        <div className="m-auto absolute top-0 flex flex-col justify-center items-center gap-3 w-full p-4 overflow-y-scroll">
+        <div className="m-auto bg-transparent absolute top-0 flex flex-col justify-center items-center gap-3 w-full p-4 overflow-y-scroll">
           <h2 className="text-5xl text-[#8093F1] mb-3">QUESTIONS</h2>
-          <div className="flex flex-col justify-center items-center gap-5 w-full">
+          <div className="bg-transparent flex flex-col justify-center items-center gap-5 w-full">
             {questionStore.map((question, i) => {
               return (
                 <QuestionBox
