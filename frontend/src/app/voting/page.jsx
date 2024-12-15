@@ -8,17 +8,52 @@ import DecorativeShapesBackground from '@/components/DecorativeShapesBackground'
 
 // Main Voting Page Component
 export default function VotingPage() {
-  const name1 = "Kelly";
-  const name2 = "Agus";
-  const [ questionStr, setQuestionStr ] = useState('');
+  const [ questionArr,  setQuestionArr ] = useState([]);
+  const [ questionIndex, setQuestionIndex ] = useState(0);
+  const [ questionStr, setQuestionStr ] = useState(`Who has the highest ${questionArr[questionIndex]}`);
+  const [ player1, setPlayer1 ] = useState('');
+  const [ player2, setPlayer2 ] = useState('');
+
   const socket = useSocket();
-  const { roomCode } = useAuthStore();
+  const roomCode = useAuthStore();
+
+  const handleChoosePlayer = (error, result) => {
+    if (error) {
+      console.error('Error occured when choosing two random players');
+    } else {
+      // if (result.status === 'PLAYER_SELECTED') {
+      //   setPlayer1(result.player1);
+      //   setPlayer2(result.player2);
+      // }
+      console.log(result);
+    }
+  }
+
+  const choosePlayer = () => {
+    // change this to roomCode later
+    socket.emit('choose-players', 'HKMT', questionArr.questions[questionIndex]._id, handleChoosePlayer) 
+    console.log(questionArr.questions[questionIndex]._id);
+  }
+
+  const reset = () => {
+    setQuestionIndex(questionIndex => questionIndex + 1);
+  }
+
+  // To update question string when questionIndex increases
+  useEffect(() => {
+    if (questionArr.length !== 0) {
+      setQuestionStr(`Who has the highest ${questionArr.questions[questionIndex].keyword}`);
+      choosePlayer();
+    }
+  }, [questionIndex, questionArr])
 
   const handleStartGame = (error, result) => {
     if (error) {
       console.error('Could start game');
     } else {
-      console.log('Game started successfully', result.questions);
+      console.log('Game started successfully', result);
+      setQuestionArr(result);
+      console.log(result);
     }
   }
 
@@ -26,10 +61,10 @@ export default function VotingPage() {
     console.log(roomCode);
     socket.emit('start-game', 'HKMT', handleStartGame);
 
-    socket.on('display-questions', (res) => {
-      console.log(res);
+    socket.on('display-questions', async ({questions}) => {
+      console.log(questions)
+      setQuestionArr(questions);
     })
-
   }, [])
 
   return (
@@ -47,7 +82,7 @@ export default function VotingPage() {
 			{/* Buttons */}
 			<div className="flex flex-col gap-4 justify-center items-center">
 				<PlayerSelectButton 
-          name={name1} 
+          name={player1} 
           color="blue"
         />
 				<div className="relative">
@@ -57,7 +92,7 @@ export default function VotingPage() {
 				</div>
 				</div>
 				<PlayerSelectButton 
-          name={name2} 
+          name={player2} 
           color="red" 
         />
 			</div>
