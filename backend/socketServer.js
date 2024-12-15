@@ -132,20 +132,31 @@ function initializeSocketServer(server) {
           // if all voted, then emit to display results and move onto next question
           // then choose players for next question
           const players = await choosePlayers(roomCode, qid);
+
           if (!players) {
             console.error('No players could be chosen.');
           }
       
           switch (players.status) {
+
             case 'NEXT_QUESTION':
               console.log('All players have been chosen, moving to the next question.');
               // give the winner of the previous question and next question
-              ioInstance.to(roomCode).emit('next-question', { winner: players.winner, questionId: players.qid });
+              const lastWinner = players.winner;
+              // new players
+              const newPlayers = await choosePlayers(roomCode, players.newQuestion);
+              ioInstance.to(roomCode).emit('next-question', { winner: lastWinner, player1: newPlayers.player1, player2: newPlayers.player2});
+              break;
+
             case 'NO_MORE_QUESTIONS':
               console.log('No more questions to display. Ending the game.');
               ioInstance.to(roomCode).emit('end-game');      
+              break;
+
             case 'PLAYERS_SELECTED':
               ioInstance.to(roomCode).emit('display-results', { player1: players.player1, player2: players.player2 });      
+              break;
+
             default:
               console.error('Unknown status received from choosePlayers:', players.status);
           }

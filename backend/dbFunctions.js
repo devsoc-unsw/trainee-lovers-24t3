@@ -342,7 +342,7 @@ const choosePlayers = async (roomCode, questionId) => {
       console.log('No more players to choose from');
 
       //find next question
-      const nextQuestion = getNextQuestion(roomCode);
+      const nextQuestion = await getNextQuestion(roomCode);
       if (!nextQuestion) {
         console.log('No more questions to choose from');
         return { status: 'NO_MORE_QUESTIONS' };
