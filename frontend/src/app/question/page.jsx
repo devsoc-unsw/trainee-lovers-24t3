@@ -85,14 +85,14 @@ const Page = () => {
   };
 
   return (
-    <div className="flex w-full bg-white text-center text-black text-3xl">
+    <div className="flex h-screen w-full bg-white text-center text-black text-3xl">
       <DecorativeShapesBackground />
       {!isHost && isLoading ? (
         <LoadingPage />
       ) : (
-        <div className="m-auto bg-transparent absolute top-0 flex flex-col justify-center items-center gap-3 w-full p-4 overflow-y-scroll">
+        <div className="absolute top-0 flex flex-col justify-center items-center gap-3 w-full p-4 overflow-y-scroll">
           <h2 className="text-5xl text-[#8093F1] mb-3">QUESTIONS</h2>
-          <div className="bg-transparent flex flex-col justify-center items-center gap-5 w-full">
+          <div className="flex flex-col justify-center items-center gap-5 w-full">
             {questionStore.map((question, i) => {
               return (
                 <QuestionBox
