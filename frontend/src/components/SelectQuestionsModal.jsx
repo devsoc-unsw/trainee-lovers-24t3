@@ -8,14 +8,14 @@ import questionsFriendLevel from "../../../backend/friend-questions.json";
 import questionCFLevel from "../../../backend/cf-questions.json";
 
 const num = [5, 6, 7, 8, 9, 10];
-const type = ["custom", "random", "friend level", "close friend level"];
+const type = ["custom", "random", "friend", "close friend"];
 
 const generateDefaultQuestions = () => {
   const questions = [];
   questionsFriendLevel.questions.map((el) => {
     questions.push({
       question: el.question,
-      level: "friend level",
+      level: "friend",
       keyword: el.keyword,
     });
   });
@@ -23,7 +23,7 @@ const generateDefaultQuestions = () => {
   questionCFLevel.questions.map((el) => {
     questions.push({
       question: el.question,
-      level: "close friend level",
+      level: "close friend",
       keyword: el.keyword,
     });
   });
@@ -53,8 +53,8 @@ const SelectQuestionsModal = () => {
         copy.splice(ran, 1);
       }
     } else if (
-      questionsType === "friend level" ||
-      questionsType === "close friend level"
+      questionsType === "friend" ||
+      questionsType === "close friend"
     ) {
       const copy = questions.filter((val) => val.level === questionsType);
 
@@ -92,13 +92,13 @@ const SelectQuestionsModal = () => {
 
     return (
       <div
-        className="w-full flex flex-row gap-2 overflow-auto"
+        className="w-full flex flex-row gap-2 overflow-y-auto"
         key="question-type-list"
       >
         {questions.map((el, i) => {
           if (
-            (questionsType === "friend level" ||
-              questionsType === "close friend level") &&
+            (questionsType === "friend" ||
+              questionsType === "close friend") &&
             questionsType !== el.level
           ) {
             return;
@@ -123,7 +123,7 @@ const SelectQuestionsModal = () => {
   };
 
   return (
-    <div className="flex flex-col w-3/4 border border-[#8093F1] p-4 items-center justify-center gap-3 rounded-lg py-5 gap-4 overflow-y-auto">
+    <div className="flex flex-col w-3/4 border border-[#8093F1] p-4 items-center justify-center gap-3 rounded-lg py-5 gap-4">
       <div className="flex flex-col gap-2">
         <p className="text-3xl text-[#4154AF] text-center">
           Select the number of question(s)
