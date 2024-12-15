@@ -130,7 +130,7 @@ function initializeSocketServer(server) {
 
         if (allVoted) {
           // if all voted, then emit to display results and move onto next question
-          // then choose players for next question
+          // then choose players for next question]
           const players = await choosePlayers(roomCode, qid);
 
           if (!players) {
@@ -142,10 +142,10 @@ function initializeSocketServer(server) {
             case 'NEXT_QUESTION':
               console.log('All players have been chosen, moving to the next question.');
               // give the winner of the previous question and next question
-              const lastWinner = players.winner;
+              const lastWinner = players.finalWinner;
               // new players
               const newPlayers = await choosePlayers(roomCode, players.newQuestion);
-              ioInstance.to(roomCode).emit('next-question', { winner: lastWinner, player1: newPlayers.player1, player2: newPlayers.player2});
+              ioInstance.to(roomCode).emit('next-question', { winner : lastWinner, player1: newPlayers.player1, player2: newPlayers.player2});
               break;
 
             case 'NO_MORE_QUESTIONS':

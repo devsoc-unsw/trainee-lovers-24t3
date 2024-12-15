@@ -259,7 +259,7 @@ const votePlayer = async (roomCode, questionId, playerId, response) => {
 
     const totalPlayers = game.users.length;
 
-    if (updateVotes.votingResponse.length === totalPlayers) {
+    if (updateVotes.votingResponse.length >= totalPlayers) {
       console.log('All players have voted');
       return true;
     } else {
@@ -323,7 +323,7 @@ const choosePlayers = async (roomCode, questionId) => {
       await votingSession.save();
 
       console.log('First round ting: Players chosen:', { player1: player1.username, player2: player2.username });
-      return { status: 'PLAYERS_SELECTED', player1: player1.username, player2: player2.username };
+      return {  status: 'PLAYERS_SELECTED', player1: player1.username, player2: player2.username };
     }
 
     // this will be 0 or 1 depending on votes
@@ -348,7 +348,7 @@ const choosePlayers = async (roomCode, questionId) => {
         return { status: 'NO_MORE_QUESTIONS' };
       }
 
-      return { status: 'NEXT_QUESTION', newQuestion: nextQuestion };
+      return { status: 'NEXT_QUESTION', finalWinner: currentWinner.username, newQuestion: nextQuestion };
     }
 
     const newPlayer = chooseOneRandomPlayer(remainingPlayers);
