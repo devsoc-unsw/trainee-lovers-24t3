@@ -7,10 +7,26 @@ import GameIdBox from '@/components/GameIdBox';
 import QrCodeBox from '@/components/QrCodeBox';
 import usePlayersStore from '@/store/usePlayersStore';
 import useAuthStore from '@/store/useAuthStore';
+import useQuestionStore from '@/store/useQuestionStore';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSocket } from '@/context/socketContext';
 
 const Page = () => {
   const { players } = usePlayersStore();
   const { isHost } = useAuthStore();
+  const router = useRouter();
+  const socket = useSocket();
+  const { setQuestionStore } = useQuestionStore();
+
+  // listen for 'display-questions' event
+  useEffect(() => {
+    // if its not the host, listen for the display questions
+    socket.on('display-questions', (response) => {
+      setQuestionStore(response.questions);
+      router.push('/question');
+    });
+  }, [socket]);
 
   return (
     <div className='flex flex-col w-full h-screen bg-white items-center justify-center'>
